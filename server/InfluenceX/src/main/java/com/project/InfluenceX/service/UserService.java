@@ -76,9 +76,10 @@ public class UserService {
         return userRepository.findByName(name);
     }
 
-    public User getUserById(String Id)
+    public User getUserById(Long Id)
     {
-        return userRepository.getById(Id);
+        return userRepository.findById(Id)
+                .orElseThrow(() -> new RuntimeException("User not found: " + Id));
     }
 
     public User getUserByEmail(String email) {

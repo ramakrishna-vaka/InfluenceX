@@ -38,7 +38,10 @@ function App() {
               <Route path="/" element={<Home />} />
                 <Route path="/my-applied-posts" element={<MyPosts />} />
                 <Route path="/my-created-campaigns" element={<CreatedCampaigns />} />
-              <Route path="/messages" element={<Messages />} />
+              <Route path="/messages">
+                <Route index element={<Messages />} />
+                <Route path=":chatId" element={<Messages />} />
+              </Route>
               <Route path="/about" element={<About />} />
               <Route path="/help" element={<Help />} />
               <Route path="/login" element={<Login />} />

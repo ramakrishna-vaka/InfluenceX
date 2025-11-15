@@ -1,5 +1,7 @@
 package com.project.InfluenceX.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -43,6 +45,7 @@ public class Posts {
 
     // All applications for this post (pending, accepted, rejected)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"post"})   // prevent looping
     private List<Application> applications = new ArrayList<>();
 
     @Column(name = "created_at")

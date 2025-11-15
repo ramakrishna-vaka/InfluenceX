@@ -1,152 +1,392 @@
+// @ts-ignore
+(window as any).global = window;
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { 
-  Search, Send, Check, X, Clock, User, 
-  CheckCircle, XCircle, AlertCircle, Eye
-} from 'lucide-react';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { Search, Clock } from 'lucide-react';
 import { useAuth } from '../../AuthProvider';
+import ChatArea from './ChatArea';
 import '../css/Messages.css';
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 interface Message {
   id: string;
-  senderId: string;
-  text: string;
+  sender: { id: number | undefined; name: string; };
+  receiver: { id: number | undefined; name: string; };
+  content: string;
   timestamp: string;
-  isRead: boolean;
+  isReadBy: boolean;
 }
 
-interface Conversation {
+interface Chat {
   id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  campaignId?: string;
-  campaignTitle?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  influencer: { id: number | undefined; name: string; };
+  brand: { id: number | undefined; name: string; };
+  status: string;
+  createdAt: string;
+  messageList: Message[];
+  unReadMsgsCount: number;
   lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  messages: Message[];
-  applicationMessage?: string;
+  lastMsgTime: string;
 }
 
 const Messages: React.FC = () => {
   const { authUser } = useAuth();
   const [searchParams] = useSearchParams();
-  const initialUserId = searchParams.get('userId');
+  const navigate = useNavigate();
+  const { chatId } = useParams<{ chatId: string }>();
+  
+  const appliedUserId = searchParams.get('userId');
+  const campaignId = searchParams.get('campaignId');
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messageText, setMessageText] = useState('');
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const stompClientRef = useRef<any>(null);
+  const subscriptionRef = useRef<any>(null);
 
+  // Fetch all chats on component mount
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    if (authUser?.id) {
+      fetchChats();
+    }
+  }, [authUser]);
 
+  // Setup WebSocket connection
   useEffect(() => {
-    if (initialUserId && conversations.length > 0) {
-      const conv = conversations.find(c => c.userId === initialUserId);
-      if (conv) {
-        setSelectedConversation(conv);
+    if (!authUser?.id) return;
+
+    console.log("Initializing WebSocket connection...");
+    const socket = new SockJS("http://localhost:8080/ws");
+    const stompClient = Stomp.over(socket);
+    
+    // Disable debug logs (optional)
+    stompClient.debug = () => {};
+    
+    stompClientRef.current = stompClient;
+
+    stompClient.connect({}, 
+      () => {
+        console.log("✅ Connected to WebSocket");
+      },
+      (error: any) => {
+        console.error("❌ WebSocket connection error:", error);
+      }
+    );
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        console.log("Unsubscribed from chat topic");
+      }
+      if (stompClient.connected) {
+        stompClient.disconnect(() => {
+          console.log("Disconnected from WebSocket");
+        });
+      }
+    };
+  }, [authUser]);
+
+  // Subscribe to chat updates when selectedChat changes
+  useEffect(() => {
+    if (!selectedChat || !stompClientRef.current) return;
+
+    const stompClient = stompClientRef.current;
+
+    if (stompClient.connected) {
+      subscribeToChat();
+    } else {
+      // Wait for connection
+      const checkConnection = setInterval(() => {
+        if (stompClient.connected) {
+          subscribeToChat();
+          clearInterval(checkConnection);
+        }
+      }, 100);
+
+      return () => clearInterval(checkConnection);
+    }
+
+    function subscribeToChat() {
+      // Unsubscribe from previous chat
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+      }
+
+      const topic = `/topic/chat/${selectedChat!.id}`;
+      console.log(`📡 Subscribing to: ${topic}`);
+
+      subscriptionRef.current = stompClient.subscribe(topic, (message: any) => {
+        try {
+          const newMessage = JSON.parse(message.body);
+          console.log("📨 New message received:", newMessage);
+          
+          // Add message with generated ID if missing
+          const messageWithId = {
+            ...newMessage,
+            id: newMessage.id || `msg-${Date.now()}-${Math.random()}`
+          };
+          
+          setMessages(prev => {
+            // Prevent duplicates
+            const exists = prev.some(m => 
+              m.id === messageWithId.id || 
+              (m.content === messageWithId.content && 
+               Math.abs(new Date(m.timestamp).getTime() - new Date(messageWithId.timestamp).getTime()) < 1000)
+            );
+            
+            if (exists) return prev;
+            return [...prev, messageWithId];
+          });
+          
+          // Update last message in chat list
+          setChats(prevChats => 
+            prevChats.map(chat => 
+              chat.id === selectedChat!.id 
+                ? { 
+                    ...chat, 
+                    lastMessage: newMessage.content, 
+                    lastMsgTime: newMessage.timestamp 
+                  }
+                : chat
+            )
+          );
+        } catch (error) {
+          console.error("Error processing message:", error);
+        }
+      });
+    }
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        subscriptionRef.current = null;
+      }
+    };
+  }, [selectedChat]);
+
+  const waitForConnection = (client, callback) => {
+  const interval = setInterval(() => {
+    if (client.connected) {
+      clearInterval(interval);
+      callback();
+    }
+  }, 100);
+};
+
+
+  // Handle chatId from URL
+  useEffect(() => {
+    if (chatId && chats.length > 0) {
+      const chat = chats.find(c => c.id === chatId);
+      if (chat && chat.id !== selectedChat?.id) {
+        handleChatSelection(chat);
       }
     }
-  }, [initialUserId, conversations]);
+  }, [chatId, chats]);
 
+  // Handle initial user selection from URL params
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedConversation?.messages]);
+    if (appliedUserId && campaignId && chats.length > 0) {
+      handleInitialChatSelection();
+    }
+  }, [appliedUserId, campaignId, chats]);
 
-  const fetchConversations = async () => {
+  const fetchChats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/messages/conversations');
-      const data = await response.json();
-      setConversations(data);
+      const response = await fetch(`http://localhost:8080/getChats/${authUser?.id}`, { 
+        credentials: 'include' 
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📋 Fetched chats:", data);
+        setChats(data);
+      } else {
+        console.error("Failed to fetch chats:", response.status);
+      }
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('Error fetching chats:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || !selectedConversation) return;
-
-    // Check if user can send messages (must be approved or be the brand)
-    //const isBrand = selectedConversation.messages[0]?.senderId !== authUser?.id;
-    const isBrand = false;
-    const isApproved = selectedConversation.status === 'approved';
-
-    if (!isBrand && !isApproved) {
-      alert('You can only send messages after the brand approves your application');
-      return;
-    }
-
+  const handleInitialChatSelection = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/messages/${selectedConversation.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: messageText })
-      });
-
+      const response = await fetch(
+        `http://localhost:8080/getChat/${appliedUserId}/${campaignId}`, 
+        { credentials: 'include' }
+      );
+      
       if (response.ok) {
-        setMessageText('');
-        fetchConversations();
+        const chat = await response.json();
+        setSelectedChat(chat);
+        setMessages(chat.messageList || []);
+        navigate(`/messages/${chat.id}`);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error fetching initial chat:', error);
     }
   };
 
-  const handleApproveApplication = async (conversationId: string) => {
+  const handleChatSelection = async (chat: Chat) => {
+    console.log("🔄 Selecting chat:", chat.id);
+    setSelectedChat(chat);
+    setLoadingMessages(true);
+    
+    // Navigate to the chat URL
+    navigate(`/messages/${chat.id}`);
+    
     try {
-      await fetch(`http://localhost:8080/messages/${conversationId}/approve`, {
-        method: 'POST'
-      });
-      fetchConversations();
+      // Fetch fresh messages
+      const response = await fetch(
+        `http://localhost:8080/getChat/${chat.id}`, 
+        { credentials: 'include' }
+      );
+      
+      if (response.ok) {
+        const fetchedMessages = await response.json();
+        console.log("💬 Fetched messages:", fetchedMessages);
+        
+        // Ensure all messages have IDs
+        const messagesWithIds = fetchedMessages.map((msg: Message, index: number) => ({
+          ...msg,
+          id: msg.id || `msg-${Date.now()}-${index}`
+        }));
+        
+        setMessages(messagesWithIds);
+        
+        // Mark messages as read
+        // setChats(prevChats =>
+        //   prevChats.map(c =>
+        //     c.id === chat.id ? { ...c, unReadMsgsCount: 0 } : c
+        //   )
+        // );
+      } else {
+        console.error("Failed to fetch messages:", response.status);
+        // Fallback to cached messages
+        setMessages(chat.messageList || []);
+      }
     } catch (error) {
-      console.error('Error approving application:', error);
+      console.error('Error fetching messages:', error);
+      setMessages(chat.messageList || []);
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
-  const handleRejectApplication = async (conversationId: string) => {
+const handleSendMessage = async (content: string) => {
+  if (!content.trim() || !selectedChat) return;
+
+  const message = {
+    sender: { 
+      id: authUser?.id || '', 
+      name: authUser?.name || '' 
+    },
+    receiver: isBrandView(selectedChat) 
+      ? selectedChat.influencer 
+      : selectedChat.brand,
+    content: content.trim(),
+    timestamp: new Date().toISOString(),
+    isReadBy: false
+  };
+
+  console.log("📤 Sending message:", message);
+
+  const client = stompClientRef.current;
+
+  if (!client) {
+    console.error("❌ STOMP client missing");
+    return;
+  }
+
+  waitForConnection(client, () => {
+    client.send(
+      `/app/chat/${selectedChat.id}`,
+      {},
+      JSON.stringify(message)
+    );
+    console.log("✅ Message SENT after waiting for connection");
+  });
+};
+
+
+  const handleApproveChat = async () => {
+    if (!selectedChat) return;
+
     try {
-      await fetch(`http://localhost:8080/messages/${conversationId}/reject`, {
-        method: 'POST'
-      });
-      fetchConversations();
+      const response = await fetch(
+        `http://localhost:8080/approveChat/${selectedChat.id}`,
+        {
+          method: 'POST',
+          credentials: 'include'
+        }
+      );
+
+      if (response.ok) {
+        console.log("✅ Chat approved");
+        setSelectedChat({ ...selectedChat, status: 'Approved' });
+        setChats(prevChats =>
+          prevChats.map(chat =>
+            chat.id === selectedChat.id ? { ...chat, status: 'Approved' } : chat
+          )
+        );
+      }
     } catch (error) {
-      console.error('Error rejecting application:', error);
+      console.error('Error approving chat:', error);
     }
   };
 
-  const handleViewProfile = (userId: string) => {
-    window.location.href = `/influencer/${userId}`;
+  const handleRejectChat = async () => {
+    if (!selectedChat) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/rejectChat/${selectedChat.id}`,
+        {
+          method: 'POST',
+          credentials: 'include'
+        }
+      );
+
+      if (response.ok) {
+        console.log("❌ Chat rejected");
+        setSelectedChat({ ...selectedChat, status: 'Rejected' });
+        setChats(prevChats =>
+          prevChats.map(chat =>
+            chat.id === selectedChat.id ? { ...chat, status: 'Rejected' } : chat
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error rejecting chat:', error);
+    }
   };
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.campaignTitle?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const isBrandView = (conv: Conversation) => {
-    //return conv.messages.length > 0 && conv.messages[0].senderId !== authUser?.id;
-    return conv.messages.length > 0;
+  const isBrandView = (chat: Chat) => {
+    return authUser?.id === chat.brand.id;
   };
+
+  const getOtherUser = (chat: Chat) => {
+    return isBrandView(chat) ? chat.influencer : chat.brand;
+  };
+
+  const filteredChats = chats.filter(chat => {
+    const otherUser = getOtherUser(chat);
+    return otherUser.name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   if (loading) {
     return (
       <div className="messages-container">
         <div className="loading-state">
           <div className="loading-spinner"></div>
-          <p>Loading messages...</p>
+          <p>Loading conversations...</p>
         </div>
       </div>
     );
@@ -155,7 +395,7 @@ const Messages: React.FC = () => {
   return (
     <div className="messages-container">
       <div className="messages-layout">
-        {/* Conversations Sidebar */}
+        {/* Chats Sidebar */}
         <div className="conversations-sidebar">
           <div className="sidebar-header">
             <h2>Messages</h2>
@@ -171,200 +411,67 @@ const Messages: React.FC = () => {
           </div>
 
           <div className="conversations-list">
-            {filteredConversations.length === 0 ? (
+            {filteredChats.length === 0 ? (
               <div className="no-conversations">
                 <p>No conversations yet</p>
               </div>
             ) : (
-              filteredConversations.map(conv => (
-                <div
-                  key={conv.id}
-                  className={`conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}`}
-                  onClick={() => setSelectedConversation(conv)}
-                >
-                  <div className="conversation-avatar">
-                    {conv.userAvatar ? (
-                      <img src={conv.userAvatar} alt={conv.userName} />
-                    ) : (
+              filteredChats.map(chat => {
+                const otherUser = getOtherUser(chat);
+                const isActive = selectedChat?.id === chat.id;
+                
+                return (
+                  <div
+                    key={chat.id}
+                    className={`conversation-item ${isActive ? 'active' : ''}`}
+                    onClick={() => handleChatSelection(chat)}
+                  >
+                    <div className="conversation-avatar">
                       <div className="avatar-placeholder">
-                        {conv.userName.charAt(0)}
+                        {otherUser.name?.charAt(0).toUpperCase()}
                       </div>
-                    )}
-                    {conv.status === 'pending' && (
-                      <span className="status-badge pending">
-                        <Clock size={12} />
-                      </span>
-                    )}
-                    {conv.status === 'approved' && (
-                      <span className="status-badge approved">
-                        <Check size={12} />
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="conversation-info">
-                    <div className="conversation-header">
-                      <span className="conversation-name">{conv.userName}</span>
-                      <span className="conversation-time">
-                        {new Date(conv.lastMessageTime).toLocaleDateString()}
-                      </span>
+                      {chat.status === 'Pending' && (
+                        <span className="status-badge pending">
+                          <Clock size={12} />
+                        </span>
+                      )}
                     </div>
-                    {conv.campaignTitle && (
-                      <span className="campaign-name">{conv.campaignTitle}</span>
-                    )}
-                    <p className="conversation-preview">{conv.lastMessage}</p>
-                  </div>
 
-                  {conv.unreadCount > 0 && (
-                    <span className="unread-badge">{conv.unreadCount}</span>
-                  )}
-                </div>
-              ))
+                    <div className="conversation-info">
+                      <div className="conversation-header">
+                        <span className="conversation-name">{otherUser.name}</span>
+                        <span className="conversation-time">
+                          {chat.lastMsgTime 
+                            ? new Date(chat.lastMsgTime).toLocaleDateString()
+                            : new Date(chat.createdAt).toLocaleDateString()
+                          }
+                        </span>
+                      </div>
+                      <p className="conversation-preview">
+                        {chat.lastMessage || 'No messages yet'}
+                      </p>
+                    </div>
+
+                    {chat.unReadMsgsCount > 0 && (
+                      <span className="unread-badge">{chat.unReadMsgsCount}</span>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="chat-area">
-          {selectedConversation ? (
-            <>
-              <div className="chat-header">
-                <div className="chat-user-info">
-                  <div className="chat-avatar">
-                    {selectedConversation.userAvatar ? (
-                      <img src={selectedConversation.userAvatar} alt={selectedConversation.userName} />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {selectedConversation.userName.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3>{selectedConversation.userName}</h3>
-                    {selectedConversation.campaignTitle && (
-                      <p className="campaign-subtitle">
-                        Re: {selectedConversation.campaignTitle}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="chat-actions">
-                  <button
-                    className="btn-view-profile"
-                    onClick={() => handleViewProfile(selectedConversation.userId)}
-                  >
-                    <Eye size={18} />
-                    View Profile
-                  </button>
-                </div>
-              </div>
-
-              {/* Application Approval Banner (for brands) */}
-              {isBrandView(selectedConversation) && selectedConversation.status === 'pending' && (
-                <div className="approval-banner">
-                  <div className="approval-info">
-                    <AlertCircle size={20} />
-                    <div>
-                      <h4>Application Pending Review</h4>
-                      {selectedConversation.applicationMessage && (
-                        <p className="application-message">
-                          "{selectedConversation.applicationMessage}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="approval-actions">
-                    <button
-                      className="btn-approve"
-                      onClick={() => handleApproveApplication(selectedConversation.id)}
-                    >
-                      <CheckCircle size={18} />
-                      Approve & Chat
-                    </button>
-                    <button
-                      className="btn-reject"
-                      onClick={() => handleRejectApplication(selectedConversation.id)}
-                    >
-                      <XCircle size={18} />
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Status Banner for Influencers */}
-              {!isBrandView(selectedConversation) && selectedConversation.status === 'pending' && (
-                <div className="status-banner pending">
-                  <Clock size={20} />
-                  <span>Waiting for brand approval to chat</span>
-                </div>
-              )}
-
-              {selectedConversation.status === 'rejected' && (
-                <div className="status-banner rejected">
-                  <XCircle size={20} />
-                  <span>Application was not accepted</span>
-                </div>
-              )}
-
-              {/* Messages */}
-              <div className="messages-list">
-                {selectedConversation.messages.map(message => (
-                  <div
-                    key={message.id}
-                    //className={`message ${message.senderId === authUser?.id ? 'sent' : 'received'}`}
-                    className={`message? 'sent' : 'received'}`}
-                  >
-                    <div className="message-content">
-                      <p>{message.text}</p>
-                      <span className="message-time">
-                        {new Date(message.timestamp).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Message Input */}
-              <div className="message-input-container">
-                {selectedConversation.status === 'approved' || isBrandView(selectedConversation) ? (
-                  <div className="message-input">
-                    <input
-                      type="text"
-                      placeholder="Type your message..."
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                    <button 
-                      className="btn-send" 
-                      onClick={handleSendMessage}
-                      disabled={!messageText.trim()}
-                    >
-                      <Send size={20} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="input-disabled">
-                    <AlertCircle size={18} />
-                    <span>You can send messages after the brand approves your application</span>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="no-chat-selected">
-              <User size={64} />
-              <h3>Select a conversation</h3>
-              <p>Choose a conversation from the list to start messaging</p>
-            </div>
-          )}
-        </div>
+        {/* Chat Area Component */}
+        <ChatArea
+          selectedChat={selectedChat}
+          messages={messages}
+          loadingMessages={loadingMessages}
+          onSendMessage={handleSendMessage}
+          onApproveChat={handleApproveChat}
+          onRejectChat={handleRejectChat}
+          stompClientRef={stompClientRef}
+        />
       </div>
     </div>
   );

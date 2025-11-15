@@ -18,12 +18,14 @@ public class ApplicationService {
     private final PostsRepository postsRepository;
     private final UserRepository userRepository;
     private final NotificationsService notificationsService;
+    private final ChatService chatService;
 
-    public ApplicationService(ApplicationRepository applicationRepository, PostsRepository postsRepository,UserRepository userRepository,NotificationsService notificationsService){
+    public ApplicationService(ApplicationRepository applicationRepository, PostsRepository postsRepository,UserRepository userRepository,NotificationsService notificationsService,ChatService chatService){
         this.applicationRepository=applicationRepository;
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
         this.notificationsService=notificationsService;
+        this.chatService=chatService;
     }
 
     //TODO: don't use repository of posts/user here. keep fetching logic only in their respective service
@@ -35,7 +37,7 @@ public class ApplicationService {
         application.setPost(post);
         User createdBy=post.getCreatedBy();
 
-        String userId=applicationDTO.getInfluencerId().toString();
+        Long userId=applicationDTO.getInfluencerId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -44,6 +46,8 @@ public class ApplicationService {
                 createdBy,
                 user.getName() + " applied to your post titled \"" + post.getTitle() + "\""
         );
+
+        chatService.createChat(createdBy,user,new Message(user,createdBy,applicationDTO.getPitchMessage()));
 
         application.setInfluencer(user);
         application.setAppliedAt(LocalDateTime.now());

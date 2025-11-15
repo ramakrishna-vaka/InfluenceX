@@ -38,7 +38,7 @@ public class PostsService {
     {
         Posts post=new Posts();
         post.setPostStatus(PostStatusEnum.Open);
-        User user = userRepository.findById(String.valueOf(postsDTO.getUserId()))
+        User user = userRepository.findById(postsDTO.getUserId())
                 .orElse(null);
         if(user==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");

@@ -1,5 +1,7 @@
 package com.project.InfluenceX.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -17,6 +19,7 @@ public class Application {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnoreProperties({"applications"})   // prevents infinite loop
     private Posts post;
 
     @ManyToOne(fetch = FetchType.LAZY)

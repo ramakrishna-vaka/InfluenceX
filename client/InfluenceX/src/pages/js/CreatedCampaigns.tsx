@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Eye, CheckCircle, XCircle, MessageSquare, Clock, DollarSign, Calendar } from 'lucide-react';
 import '../css/CreatedCampaigns.css';
+import { useNavigate } from 'react-router-dom';
 
 interface Application {
   id: string;
-  influencerId: string;
-  influencerName: string;
-  influencerAvatar?: string;
+  influencer: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  }
   followers: number;
-  message: string;
+  pitchMessage: string;
   status: 'pending' | 'accepted' | 'rejected';
   appliedAt: string;
 }
@@ -24,7 +28,7 @@ interface Campaign {
   applicationsCount: number;
   pendingCount: number;
   acceptedCount: number;
-  applicants: Application[];
+  applications: Application[];
 }
 
 const CreatedCampaigns: React.FC = () => {
@@ -33,6 +37,7 @@ const CreatedCampaigns: React.FC = () => {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCampaigns();
@@ -63,7 +68,7 @@ const CreatedCampaigns: React.FC = () => {
     action: 'accept' | 'reject'
   ) => {
     try {
-      await fetch(`http://localhost:8080/campaigns/${campaignId}/applicants/${applicationId}/${action}`, {
+      await fetch(`http://localhost:8080/campaigns/${campaignId}/applications/${applicationId}/${action}`, {
         method: 'POST',
       });
       // Refresh campaigns
@@ -78,18 +83,19 @@ const CreatedCampaigns: React.FC = () => {
     window.location.href = `/influencer/${influencerId}`;
   };
 
-  const handleSendMessage = (application: Application) => {
-    // Navigate to messages with this influencer
-    window.location.href = `/messages?userId=${application.influencerId}`;
-  };
+ const handleSendMessage = (application: Application,selectedCampaign:Campaign) => {
+  navigate(`/messages?userId=${application.influencer.id}`, {
+    state: { application ,post:selectedCampaign},
+  });
+};
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count.toString();
+    return count?.toString();
   };
 
-  const filteredApplications = selectedCampaign?.applicants?.filter(app => 
+  const filteredApplications = selectedCampaign?.applications?.filter(app => 
     filterStatus === 'all' ? true : app.status === filterStatus
   ) || [];
 
@@ -108,7 +114,7 @@ const CreatedCampaigns: React.FC = () => {
     <div className="created-campaigns-container">
       <div className="page-header">
         <h1>My Created Campaigns</h1>
-        <p className="page-subtitle">Manage your campaigns and review influencer applicants</p>
+        <p className="page-subtitle">Manage your campaigns and review influencer applications</p>
       </div>
 
       <div className="campaigns-layout">
@@ -145,7 +151,7 @@ const CreatedCampaigns: React.FC = () => {
                   <div className="campaign-stats">
                     <div className="stat">
                       <Users size={14} />
-                      <span>{campaign.applicationsCount} applicants</span>
+                      <span>{campaign.applicationsCount} applications</span>
                     </div>
                     {campaign.pendingCount > 0 && (
                       <div className="stat pending">
@@ -167,14 +173,14 @@ const CreatedCampaigns: React.FC = () => {
         </div>
 
         {/* Right Side - Applications Panel */}
-        <div className="applicants-panel">
+        <div className="applications-panel">
           {selectedCampaign ? (
             <>
               <div className="panel-header">
                 <div>
                   <h2>{selectedCampaign.title}</h2>
-                  <p className="applicants-count">
-                    {selectedCampaign.applicationsCount} total applicants
+                  <p className="applications-count">
+                    {selectedCampaign.applicationsCount} total applications
                   </p>
                 </div>
                 <div className="filter-tabs">
@@ -205,10 +211,10 @@ const CreatedCampaigns: React.FC = () => {
                 </div>
               </div>
 
-              <div className="applicants-list">
+              <div className="applications-list">
                 {filteredApplications.length === 0 ? (
-                  <div className="empty-applicants">
-                    <p>No {filterStatus !== 'all' ? filterStatus : ''} applicants</p>
+                  <div className="empty-applications">
+                    <p>No {filterStatus !== 'all' ? filterStatus : ''} applications</p>
                   </div>
                 ) : (
                   filteredApplications.map(application => (
@@ -216,16 +222,16 @@ const CreatedCampaigns: React.FC = () => {
                       <div className="application-header">
                         <div className="influencer-info">
                           <div className="influencer-avatar">
-                            {application.influencerAvatar ? (
-                              <img src={application.influencerAvatar} alt={application.influencerName} />
+                            {application.influencer.avatar ? (
+                              <img src={application.influencer.avatar} alt={application.influencer.name} />
                             ) : (
                               <div className="avatar-placeholder">
-                                {application.influencerName.charAt(0)}
+                                {application.influencer.name?.charAt(0)}
                               </div>
                             )}
                           </div>
                           <div>
-                            <h3>{application.influencerName}</h3>
+                            <h3>{application.influencer.name}</h3>
                             <p className="follower-count">
                               <Users size={14} />
                               {formatFollowers(application.followers)} followers
@@ -239,7 +245,7 @@ const CreatedCampaigns: React.FC = () => {
 
                       <div className="application-message">
                         <p className="message-label">Application Message:</p>
-                        <p className="message-text">{application.message}</p>
+                        <p className="message-text">{application.pitchMessage}</p>
                       </div>
 
                       <div className="application-footer">
@@ -249,14 +255,14 @@ const CreatedCampaigns: React.FC = () => {
                         <div className="application-actions">
                           <button
                             className="btn-view-profile"
-                            onClick={() => handleViewProfile(application.influencerId)}
+                            onClick={() => handleViewProfile(application.influencer.id)}
                           >
                             <Eye size={16} />
                             View Profile
                           </button>
                           <button
                             className="btn-message"
-                            onClick={() => handleSendMessage(application)}
+                            onClick={() => handleSendMessage(application,selectedCampaign)}
                           >
                             <MessageSquare size={16} />
                             Message
@@ -297,7 +303,7 @@ const CreatedCampaigns: React.FC = () => {
           ) : (
             <div className="no-campaign-selected">
               <Users size={64} />
-              <p>Select a campaign to view applicants</p>
+              <p>Select a campaign to view applications</p>
             </div>
           )}
         </div>

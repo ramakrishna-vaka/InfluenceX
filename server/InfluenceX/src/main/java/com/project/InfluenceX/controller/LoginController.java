@@ -69,6 +69,16 @@ public class LoginController {
             }
         }
 
+        // ❗ If token missing → return 401 immediately (avoid exceptions)
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing auth token");
+        }
+
+        //TODO
+//        if (!jwtService.validateToken(token)) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+//        }
+
         // Step 3: Extract user email from the JWT and fetch user info
         String email = jwtService.extractEmail(token);
         User user = userService.getUserByEmail(email);

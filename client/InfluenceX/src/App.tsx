@@ -20,9 +20,10 @@ function App() {
   const [selectedPath, setSelectedPath] = useState('/');
 
   return (
+    <Router>
     <AuthProvider>
       <CampaignFilterProvider>
-      <Router>
+      
         <div className="app-layout">
           <Header onToggleNavbar={(pathname) => {
             setNavbarVisible((prev) => !prev)
@@ -50,9 +51,10 @@ function App() {
             </Routes>
           </main>
         </div>
-        </Router>
+        
         </CampaignFilterProvider>
       </AuthProvider>
+      </Router>
   );
 }
 

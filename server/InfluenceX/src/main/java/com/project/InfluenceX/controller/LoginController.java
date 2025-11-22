@@ -1,5 +1,10 @@
 package com.project.InfluenceX.controller;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import org.springframework.beans.factory.annotation.Value;
 import com.project.InfluenceX.model.LoginDTO;
 import com.project.InfluenceX.model.User;
 import com.project.InfluenceX.service.JwtService;
@@ -13,12 +18,19 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Map;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class LoginController {
 
     private final UserService userService;
     private final JwtService jwtService;
+
+    @Value("${google.client.id}")
+    private String googleClientId;
+
 
     public LoginController(UserService userService, JwtService jwtService) {
         this.userService = userService;
@@ -97,4 +109,56 @@ public class LoginController {
 
         return ResponseEntity.ok(user);
     }
+
+    @PostMapping("/auth/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body,
+                                         HttpServletResponse response) {
+        try {
+            String googleToken = body.get("credential");
+
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(),
+                    JacksonFactory.getDefaultInstance()
+            ).setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(googleToken);
+            if (idToken == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Google Token");
+            }
+
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+
+            // 🚀 Check if user exists, else create new one
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                user = new User();
+                user.setEmail(email);
+                user.setName(name);
+                user.setPassword("GOOGLE_USER"); // dummy
+                userService.registerGoogleUser(user);
+            }
+
+            // 🎟 Generate JWT
+            String token = jwtService.generateToken(user);
+
+            ResponseCookie cookie = ResponseCookie.from("authToken", token)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .sameSite("Strict")
+                    .maxAge(15 * 60)
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            return ResponseEntity.ok("Google login successful");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Google login failed");
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ import './../css/Login.css';
 import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../AuthProvider';
+import GoogleButton from '../../components/js/GoogleButton';
 
 function Login() {
 
@@ -74,6 +75,10 @@ function Login() {
         </div>
 
         <button type="submit" className="login-button">Login</button>
+
+        <div style={{ marginTop: "13px", textAlign: "center" }}>OR</div>
+
+        <GoogleButton />
       </form>
     </div>
     <div >  

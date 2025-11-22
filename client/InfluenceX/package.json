@@ -12,6 +12,7 @@
   "dependencies": {
     "@stomp/stompjs": "^7.2.1",
     "bootstrap": "^5.3.8",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.543.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

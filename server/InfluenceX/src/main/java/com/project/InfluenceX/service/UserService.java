@@ -86,5 +86,9 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public void registerGoogleUser(User user){
+        userRepository.save(user);
+    }
+
 
 }

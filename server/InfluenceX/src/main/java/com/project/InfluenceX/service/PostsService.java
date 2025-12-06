@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostsService {
@@ -23,10 +25,47 @@ public class PostsService {
         this.userRepository = userRepository;
     }
 
-    public List<Posts> getPosts()
-    {
-        return postsRepository.findAll();
+    public List<PostResponseDTO> getPosts() {
+        List<Posts> posts = postsRepository.findAll();
+
+        return posts.stream().map(post -> {
+            PostResponseDTO dto = new PostResponseDTO();
+            dto.setId(post.getId());
+            dto.setBudget(post.getBudget());
+            dto.setDeadline(post.getDeadline());
+            dto.setLocation(post.getLocation());
+            dto.setType(post.getType());
+            dto.setTitle(post.getTitle());
+            dto.setTitle(post.getTitle());
+            dto.setDescription(post.getDescription());
+            dto.setApplicants(post.getApplicants());
+            dto.setOpenRoles(post.getOpenRoles());
+            dto.setPostStatus(post.getPostStatus().name());
+            dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
+
+            // Convert image to Base64
+            if (post.getImageData() != null) {
+                dto.setImageBase64(Base64.getEncoder().encodeToString(post.getImageData()));
+            }
+
+            // Convert applications
+            List<ApplicationDTO> apps = post.getApplications()
+                    .stream()
+                    .map(app -> {
+                        ApplicationDTO a = new ApplicationDTO();
+                        a.setPostId(app.getId());
+                        a.setInfluencerId(app.getInfluencer().getId());
+                        a.setPitchMessage(app.getPitchMessage());
+                        return a;
+                    })
+                    .toList();
+
+            dto.setApplications(apps);
+
+            return dto;
+        }).collect(Collectors.toList());
     }
+
 
     public Posts getPostById(Long postId) {
         return postsRepository.findById(postId)
@@ -34,7 +73,7 @@ public class PostsService {
     }
 
 
-    public ResponseEntity createPost(PostsDTO postsDTO)
+    public ResponseEntity createPost(PostRequestDTO postsDTO)
     {
         Posts post=new Posts();
         post.setPostStatus(PostStatusEnum.Open);
@@ -46,13 +85,31 @@ public class PostsService {
         post.setCreatedBy(user);
         post.setTitle(postsDTO.getCampaignTitle());
         post.setDescription(postsDTO.getCampaignDescription());
-        post.setBudget(Integer.parseInt(postsDTO.getBudget()));
+        post.setBudget(postsDTO.getBudget());
         post.setDeadline(postsDTO.getDeadline());
         post.setLocation(postsDTO.getLocation());
         post.setPlatformsNeeded(Arrays.asList(postsDTO.getPlatforms()));
         post.setType(postsDTO.getType());
-        postsRepository.save(post);
-        return ResponseEntity.ok(post);
+        post.setOpenRoles(1);
+        post.setApplicants(0);
+        try {
+            if (postsDTO.getImage() != null && !postsDTO.getImage().isEmpty()) {
+                byte[] imageBytes = postsDTO.getImage().getBytes();
+                System.out.println("Image bytes length: " + (imageBytes != null ? imageBytes.length : 0));
+                post.setImageData(imageBytes);
+            } else {
+                post.setImageData(null); // Explicitly set to null if no image
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Add this for debugging
+            return ResponseEntity.status(500).body("Failed to read image: " + e.getMessage());
+        }
+
+        System.out.println("Saving post with imageData: " +
+                (post.getImageData() != null ? post.getImageData().length + " bytes" : "null"));
+
+        Posts savedPost = postsRepository.save(post);
+        return ResponseEntity.ok(savedPost);
     }
 
     public List<Posts> getMyPosts(User user){

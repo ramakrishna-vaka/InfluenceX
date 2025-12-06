@@ -10,46 +10,62 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@Table(name = "posts")  // Add this too
 public class Posts {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(insertable = false)
     private Long id;
 
-    //@NotNull
+    @Column(name = "title")
     private String title;
 
+    @Column(name = "description")
     private String description;
 
     @Enumerated
+    @Column(name = "post_status")
     private PostStatusEnum postStatus;
 
     @ManyToOne
-    @JoinColumn(name="created_by", nullable = false)
+    @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Column(name = "open_roles")
     private int openRoles;
 
-    private int applicants;
+    @Column(name = "applicants")
+    private int applicants = 0;
 
+    @Column(name = "budget")
     private int budget;
 
+    @Column(name = "deadline")
     private String deadline;
 
+    @Column(name = "location")
     private String location;
 
+    @Column(name = "type")
     private String type;
 
     @ElementCollection
+    @CollectionTable(name = "post_platforms", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "platform")
     private List<String> platformsNeeded;
 
-    // All applications for this post (pending, accepted, rejected)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties({"post"})   // prevent looping
+    @JsonIgnoreProperties({"post"})
     private List<Application> applications = new ArrayList<>();
 
     @Column(name = "created_at")
-    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+    private final java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+
+    // Remove @Lob and change the mapping to use @Basic with length
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "image_data", length = 10485760) // 10MB limit
+    private byte[] imageData;
 
     public Posts() {}
 
@@ -79,6 +95,10 @@ public class Posts {
     public List<String> getPlatformsNeeded() { return platformsNeeded; }
 
     public List<Application> getApplications(){ return applications;}
+
+    public byte[] getImageData(){
+        return imageData;
+    }
 
 
     // ---------- SETTERS ----------
@@ -130,6 +150,10 @@ public class Posts {
         List<Application> applications = getApplications();
         applications.add(application);
         this.applications = applications;
+    }
+
+    public void setImageData(byte[] imageData){
+        this.imageData=imageData;
     }
 
 }

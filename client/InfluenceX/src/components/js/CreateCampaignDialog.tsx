@@ -131,7 +131,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            placeholder="e.g., Summer Collection Launch 2024"
+            placeholder=""
           />
 
           <label>Campaign Type *</label>
@@ -157,16 +157,16 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            placeholder="Briefly describe your campaign..."
+            placeholder=""
           />
 
-          <label>Budget (USD)</label>
+          <label>Budget</label>
           <input
             type="number"
             name="budget"
             value={formData.budget}
             onChange={handleInputChange}
-            placeholder="Enter budget"
+            placeholder=""
           />
 
           <label>Deadline</label>
@@ -198,7 +198,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
             name="location"
             value={formData.location}
             onChange={handleInputChange}
-            placeholder="e.g., United States, Global"
+            placeholder=""
           />
 
           <label>Upload Image</label>

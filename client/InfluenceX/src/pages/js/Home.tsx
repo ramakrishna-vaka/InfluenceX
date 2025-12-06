@@ -250,13 +250,17 @@ const Home: React.FC = () => {
           <div className="posts-grid">
             {filteredPosts.map(post => {
               const statusConfig = getStatusConfig(post.status);
-              const hasImage = post.image && post.image.trim() !== '';
+              const hasImage = post.imageBase64 && post.imageBase64.trim() !== '';
               
               return (
                 <div key={post.id} className={`post-card ${hasImage ? 'has-image' : 'no-image'}`}>
                   {hasImage && (
                     <div className="post-image">
-                      <img src={post.image} alt={post.title} />
+                      <img 
+                        className="post-img"
+                        src={`data:image/*;base64,${post.imageBase64}`} 
+                        alt="Post"
+                      />
                       <div className="post-overlay">
                         <span className={statusConfig.className}>
                           {statusConfig.text}
@@ -352,9 +356,9 @@ const Home: React.FC = () => {
             </div>
 
             <div className="dialog-body">
-              {selectedPost.image && (
+              {selectedPost.imageBase64 && (
                 <div className="dialog-image">
-                  <img src={selectedPost.image} alt={selectedPost.title} />
+                  <img src={selectedPost.imageBase64} alt={selectedPost.title} />
                 </div>
               )}
 

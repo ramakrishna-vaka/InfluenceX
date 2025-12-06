@@ -6,7 +6,7 @@ export interface Post {
   minFollowers: number;
   category: string;
   deadline: string;
-  image?: string;
+  imageBase64?: string;
   authorName: string;
   createdAt: string;
   status: 'open' | 'in-progress' | 'completed';

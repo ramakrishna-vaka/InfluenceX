@@ -50,18 +50,18 @@ const Home: React.FC = () => {
       result = result.filter(post =>
         post.title.toLowerCase().includes(query) ||
         post.description.toLowerCase().includes(query) ||
-        post.category?.toLowerCase().includes(query)
+        post.type?.toLowerCase().includes(query)
       );
     }
 
     // Apply category filter from context (if category is set)
     if (filters.category !== 'all') {
-      result = result.filter(post => post.category.toLowerCase() === filters.category.toLowerCase());
+      result = result.filter(post => post.type.toLowerCase() === filters.category.toLowerCase());
     }
 
     // Apply local category filter (from dropdown)
     if (filterCategory !== 'all') {
-      result = result.filter(post => post.category === filterCategory);
+      result = result.filter(post => post.type === filterCategory);
     }
 
     // Apply status filter from context
@@ -74,7 +74,7 @@ const Home: React.FC = () => {
       const [min, max] = filters.budget.split('-').map(v => v.replace('+', ''));
       const minBudget = parseInt(min) || 0;
       const maxBudget = max ? parseInt(max) : Infinity;
-      result = result.filter(post => post.price >= minBudget && post.price <= maxBudget);
+      result = result.filter(post => post.budget >= minBudget && post.budget <= maxBudget);
     }
 
     // Apply "My Posts" filter
@@ -92,16 +92,16 @@ const Home: React.FC = () => {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case 'budget_high':
         case 'price-high':
-          return b.price - a.price;
+          return b.budget - a.budget;
         case 'budget_low':
         case 'price-low':
-          return a.price - b.price;
+          return a.budget - b.budget;
         case 'deadline':
           return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         case 'alphabetical':
           return a.title.localeCompare(b.title);
         case 'followers':
-          return b.minFollowers - a.minFollowers;
+          return b.followers - a.followers;
         default:
           return 0;
       }
@@ -110,9 +110,26 @@ const Home: React.FC = () => {
     return result;
   }, [posts, searchQuery, sortBy, filterCategory, showMyPosts]); //dependencies
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  const formatINRShortWithSymbol = (value: number) => {
+  const formatted = formatINRShort(value);
+  return `₹${formatted}`;
   };
+  
+  const formatINRShort = (value: number) => {
+  if (value >= 10000000) {
+    return (value / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
+  } 
+  if (value >= 100000) {
+    return (value / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
+  }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
+  }
+  return value.toString();
+};
+
+
+
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -284,19 +301,18 @@ const Home: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <span className="post-category">{post.category}</span>
+                      <span className="post-category">{post.type}</span>
                     </div>
                     
                     <p className="post-description">{post.description}</p>
                     
                     <div className="post-metrics">
                       <div className="metric price-metric">
-                        <DollarSign className="metric-icon" size={16} />
-                        <span className="metric-value">{formatCurrency(post.price)}</span>
+                        <span className="metric-value">{formatINRShortWithSymbol(post.budget)}</span>
                       </div>
                       <div className="metric">
                         <Users className="metric-icon" size={16} />
-                        <span>{formatFollowers(post.minFollowers)}+ followers</span>
+                        <span>{formatFollowers(post.followers)}+ followers</span>
                       </div>
                       <div className="metric">
                         <Calendar className="metric-icon" size={16} />
@@ -309,7 +325,7 @@ const Home: React.FC = () => {
                         <div className="author-avatar">
                           <User size={14} />
                         </div>
-                        <span>{post.authorName}</span>
+                        <span>{post.createdBy.name}</span>
                       </div>
                       <div className="post-rating">
                         <Star size={14} fill="currentColor" />
@@ -365,7 +381,7 @@ const Home: React.FC = () => {
               <div className="dialog-info-grid">
                 <div className="info-item">
                   <span className="info-label">Category</span>
-                  <span className="info-value">{selectedPost.category}</span>
+                  <span className="info-value">{selectedPost.type}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Status</span>
@@ -375,11 +391,11 @@ const Home: React.FC = () => {
                 </div>
                 <div className="info-item">
                   <span className="info-label">Budget</span>
-                  <span className="info-value">{formatCurrency(selectedPost.price)}</span>
+                  <span className="info-value">{formatINRShortWithSymbol(selectedPost.budget)}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Min Followers</span>
-                  <span className="info-value">{formatFollowers(selectedPost.minFollowers)}+</span>
+                  <span className="info-value">{formatFollowers(selectedPost.followers)}+</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Deadline</span>
@@ -389,7 +405,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="info-item">
                   <span className="info-label">Posted By</span>
-                  <span className="info-value">{selectedPost.authorName}</span>
+                  <span className="info-value">{selectedPost.createdBy.name}</span>
                 </div>
               </div>
 

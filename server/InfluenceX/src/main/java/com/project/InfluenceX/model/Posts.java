@@ -67,6 +67,9 @@ public class Posts {
     @Column(name = "image_data", length = 10485760) // 10MB limit
     private byte[] imageData;
 
+    @Column(name="followers")
+    private String followers;
+
     public Posts() {}
 
     // ---------- GETTERS ----------
@@ -98,6 +101,10 @@ public class Posts {
 
     public byte[] getImageData(){
         return imageData;
+    }
+
+    public String getFollowers(){
+        return followers;
     }
 
 
@@ -154,6 +161,10 @@ public class Posts {
 
     public void setImageData(byte[] imageData){
         this.imageData=imageData;
+    }
+
+    public void setFollowers(String followers){
+        this.followers=followers;
     }
 
 }

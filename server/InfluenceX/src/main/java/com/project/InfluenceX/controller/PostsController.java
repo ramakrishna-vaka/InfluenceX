@@ -41,6 +41,11 @@ public class PostsController {
 
             PostResponseDTO dto = new PostResponseDTO();
             dto.setId(post.getId());
+            User user=post.getCreatedBy();
+            UserDTO createdBy=new UserDTO();
+            createdBy.setName(user.getName());
+            createdBy.setEmail(user.getEmail());
+            dto.setCreatedBy(createdBy);
             dto.setBudget(post.getBudget());
             dto.setDeadline(post.getDeadline());
             dto.setLocation(post.getLocation());
@@ -48,6 +53,7 @@ public class PostsController {
             dto.setTitle(post.getTitle());
             dto.setTitle(post.getTitle());
             dto.setDescription(post.getDescription());
+            dto.setFollowers(post.getFollowers());
             dto.setApplicants(post.getApplicants());
             dto.setOpenRoles(post.getOpenRoles());
             dto.setPostStatus(post.getPostStatus().name());

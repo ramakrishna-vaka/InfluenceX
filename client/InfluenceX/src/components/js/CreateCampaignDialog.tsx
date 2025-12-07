@@ -26,6 +26,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     deadline: "",
     platforms: [] as string[],
     location: "",
+    followers: "",  
   });
 
   const [image, setImage] = useState<File | null>(null);
@@ -92,6 +93,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     data.append("deadline", formData.deadline);
     data.append("location", formData.location);
     data.append("type", formData.type);
+    data.append("followers", formData.followers);
 
     formData.platforms.forEach((p, i) => {
   data.append(`platforms[${i}]`, p);
@@ -165,6 +167,15 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
             type="number"
             name="budget"
             value={formData.budget}
+            onChange={handleInputChange}
+            placeholder=""
+          />
+
+          <label>Followers</label>
+          <input
+            type="number"
+            name="followers"
+            value={formData.followers}
             onChange={handleInputChange}
             placeholder=""
           />

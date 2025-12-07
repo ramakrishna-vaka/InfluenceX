@@ -2,12 +2,16 @@ export interface Post {
   id: string;
   title: string;
   description: string;
-  price: number;
-  minFollowers: number;
-  category: string;
+  budget: number;
+  followers: number;
+  type: string;
   deadline: string;
   imageBase64?: string;
-  authorName: string;
+  createdBy: {
+    name: string;
+    email: string;
+    id?: string;
+  };
   createdAt: string;
   status: 'open' | 'in-progress' | 'completed';
   hasApplied?: boolean;

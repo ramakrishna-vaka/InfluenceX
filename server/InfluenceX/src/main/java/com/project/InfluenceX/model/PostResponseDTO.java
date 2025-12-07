@@ -15,6 +15,7 @@ public class PostResponseDTO {
     private String location;
     private String type;
     private String[] platformsNeeded;
+    private String followers;
 
     private List<ApplicationDTO> applications;
     private int applicants;
@@ -33,6 +34,7 @@ public class PostResponseDTO {
     public String getLocation() { return location; }
     public String getType() { return type; }
     public String[] getPlatformsNeeded() { return platformsNeeded; }
+    public String getFollowers(){ return followers; }
     public List<ApplicationDTO> getApplications() { return applications; }
     public int getApplicants() { return applicants; }
     public int getOpenRoles() { return openRoles; }
@@ -49,6 +51,7 @@ public class PostResponseDTO {
     public void setLocation(String location) { this.location = location; }
     public void setType(String type) { this.type = type; }
     public void setPlatformsNeeded(String[] platformsNeeded) { this.platformsNeeded = platformsNeeded; }
+    public void setFollowers(String followers){ this.followers=followers; }
     public void setApplications(List<ApplicationDTO> applications) { this.applications = applications; }
     public void setApplicants(int applicants) { this.applicants = applicants; }
     public void setOpenRoles(int openRoles) { this.openRoles = openRoles; }

@@ -15,6 +15,7 @@ public class PostRequestDTO {
     private String[] platforms;
     private MultipartFile image;
     private List<ApplicationDTO> applicationDTOList;
+    private String followers;
 
 
     // getters ...
@@ -28,6 +29,7 @@ public class PostRequestDTO {
     public String[] getPlatforms() { return platforms; }
     public MultipartFile getImage() { return image; }
     public List<ApplicationDTO> getApplicationDTOList(){ return applicationDTOList; }
+    public String getFollowers(){return followers; }
 
     // ✅ setters
     public void setUserId(long userId) { this.userId = userId; }
@@ -39,5 +41,6 @@ public class PostRequestDTO {
     public void setType(String type) { this.type = type; }
     public void setPlatforms(String[] platforms) { this.platforms = platforms; }
     public void setImage(MultipartFile image) { this.image = image; }
+    public void setFollowers(String followers){ this.followers=followers; }
 }
 

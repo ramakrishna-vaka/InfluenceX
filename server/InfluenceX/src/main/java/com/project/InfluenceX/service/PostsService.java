@@ -31,6 +31,11 @@ public class PostsService {
         return posts.stream().map(post -> {
             PostResponseDTO dto = new PostResponseDTO();
             dto.setId(post.getId());
+            User user=post.getCreatedBy();
+            UserDTO createdBy=new UserDTO();
+            createdBy.setName(user.getName());
+            createdBy.setEmail(user.getEmail());
+            dto.setCreatedBy(createdBy);
             dto.setBudget(post.getBudget());
             dto.setDeadline(post.getDeadline());
             dto.setLocation(post.getLocation());
@@ -40,6 +45,7 @@ public class PostsService {
             dto.setDescription(post.getDescription());
             dto.setApplicants(post.getApplicants());
             dto.setOpenRoles(post.getOpenRoles());
+            dto.setFollowers(post.getFollowers());
             dto.setPostStatus(post.getPostStatus().name());
             dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
 
@@ -89,6 +95,7 @@ public class PostsService {
         post.setDeadline(postsDTO.getDeadline());
         post.setLocation(postsDTO.getLocation());
         post.setPlatformsNeeded(Arrays.asList(postsDTO.getPlatforms()));
+        post.setFollowers(postsDTO.getFollowers());
         post.setType(postsDTO.getType());
         post.setOpenRoles(1);
         post.setApplicants(0);

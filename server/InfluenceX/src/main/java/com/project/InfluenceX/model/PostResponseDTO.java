@@ -24,6 +24,8 @@ public class PostResponseDTO {
 
     private String imageBase64;   // Base64 string for UI
 
+    private boolean isCreatedByMe;
+
     // --- Getters ---
     public long getId() { return id; }
     public UserDTO getCreatedBy() { return createdBy; }
@@ -40,6 +42,7 @@ public class PostResponseDTO {
     public int getOpenRoles() { return openRoles; }
     public String getPostStatus() { return postStatus; }
     public String getImageBase64() { return imageBase64; }
+    public boolean getIsCreatedByMe() { return isCreatedByMe; }
 
     // --- Setters ---
     public void setId(long id) { this.id = id; }
@@ -57,4 +60,5 @@ public class PostResponseDTO {
     public void setOpenRoles(int openRoles) { this.openRoles = openRoles; }
     public void setPostStatus(String postStatus) { this.postStatus = postStatus; }
     public void setImageBase64(String imageBase64) { this.imageBase64 = imageBase64; }
+    public void setCreatedByMe(boolean isCreatedByMe){ this.isCreatedByMe=isCreatedByMe; }
 }

@@ -9,10 +9,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +22,7 @@ public class PostsService {
         this.userRepository = userRepository;
     }
 
-    public List<PostResponseDTO> getPosts() {
+    public List<PostResponseDTO> getPosts(User loggedUser) {
         List<Posts> posts = postsRepository.findAll();
 
         return posts.stream().map(post -> {
@@ -35,6 +32,7 @@ public class PostsService {
             UserDTO createdBy=new UserDTO();
             createdBy.setName(user.getName());
             createdBy.setEmail(user.getEmail());
+            createdBy.setId(user.getId());
             dto.setCreatedBy(createdBy);
             dto.setBudget(post.getBudget());
             dto.setDeadline(post.getDeadline());
@@ -48,6 +46,13 @@ public class PostsService {
             dto.setFollowers(post.getFollowers());
             dto.setPostStatus(post.getPostStatus().name());
             dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
+            if(loggedUser==null){
+                dto.setCreatedByMe(false);
+            }else if(loggedUser.getId()== user.getId()) {
+                dto.setCreatedByMe(true);
+            }else{
+                dto.setCreatedByMe(false);
+            }
 
             // Convert image to Base64
             if (post.getImageData() != null) {
@@ -130,5 +135,46 @@ public class PostsService {
     public static void setApplications(Posts post,Application application){
         post.setApplications(application);
     }
+
+    public ResponseEntity updatePost(PostRequestDTO postsDTO, Posts post) {
+
+        User user = userRepository.findById(postsDTO.getUserId()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        // Normal fields update
+        post.setTitle(postsDTO.getCampaignTitle());
+        post.setDescription(postsDTO.getCampaignDescription());
+        post.setBudget(postsDTO.getBudget());
+        post.setDeadline(postsDTO.getDeadline());
+        post.setLocation(postsDTO.getLocation());
+        post.setPlatformsNeeded(new ArrayList<>(Arrays.asList(postsDTO.getPlatforms())));
+        post.setFollowers(postsDTO.getFollowers());
+        post.setType(postsDTO.getType());
+        post.setOpenRoles(1);
+
+        // Image update
+        try {
+            if (postsDTO.getImage() != null && !postsDTO.getImage().isEmpty()) {
+
+                // ⬇ NEW IMAGE UPLOADED → UPDATE IT
+                byte[] imageBytes = postsDTO.getImage().getBytes();
+                post.setImageData(imageBytes);
+
+            } else {
+                // ⬇ NO NEW IMAGE → KEEP EXISTING
+                // DO NOTHING (do NOT set null)
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed to process image");
+        }
+
+        Posts savedPost = postsRepository.save(post);
+        return ResponseEntity.ok(savedPost);
+    }
+
 
 }

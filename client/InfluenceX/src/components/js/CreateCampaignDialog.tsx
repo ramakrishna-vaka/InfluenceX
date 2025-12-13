@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import {
   X,
   Users,
@@ -17,19 +17,40 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
   isOpen,
   onClose,
   userId,
+  post,
+  mode
 }) => {
+
   const [formData, setFormData] = useState({
-    name: "",
-    type: "",
-    description: "",
-    budget: "",
-    deadline: "",
-    platforms: [] as string[],
-    location: "",
-    followers: "",  
-  });
+  name: post?.title || "",
+  type: post?.type || "",
+  description: post?.description || "",
+  budget: post?.budget?.toString() || "",
+  deadline: post?.deadline || "",
+  platforms: post?.platformsNeeded || [],
+  location: post?.location || "",
+  followers: post?.followers?.toString() || "",
+});
+
 
   const [image, setImage] = useState<File | null>(null);
+const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
+
+  useEffect(() => {
+  if (post) {
+    setFormData({
+      name: post.title,
+      type: post.type,
+      description: post.description,
+      budget: post.budget.toString(),
+      deadline: post.deadline,
+      platforms: post.platformsNeeded || [],
+      location: post.location,
+      followers: post.followers?.toString() || "",
+    });
+    setExistingImage(post.imageBase64 || "");
+  }
+}, [post]);
 
   const campaignTypes = [
     { value: "brand-awareness", label: "Brand Awareness", icon: Megaphone },
@@ -86,7 +107,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     }
 
     const data = new FormData();
-    data.append("userId", userId ? userId.toString() : "");
+    data.append("userId", userId ? userId.toString() : post?.createdBy.id?.toString() ||"");
     data.append("campaignTitle", formData.name);
     data.append("campaignDescription", formData.description);
     data.append("budget", formData.budget);
@@ -101,6 +122,22 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
 
     if (image) data.append("image", image);
 
+    if (mode === 'edit') {
+      const postId= post?.id;
+      const response = await fetch(`http://localhost:8080/update/post/${postId}`, {
+        method: "POST",
+        body: data,
+      });
+
+      if (response.ok) {
+        alert("Campaign updated successfully");
+        onClose();
+      } else {
+        alert("Failed to update campaign");
+      }
+      return;
+    }
+      
     const response = await fetch("http://localhost:8080/create/post", {
       method: "POST",
       body: data, 
@@ -120,7 +157,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     <div className="dialog-overlay">
       <div className="dialog-container">
         <div className="dialog-header">
-          <h2>Create Campaign</h2>
+          <h2>{mode === 'edit' ? 'Edit Campaign' : 'Create Campaign'}</h2>
           <button className="dialog-close" onClick={onClose}>
             <X size={22} />
           </button>
@@ -225,7 +262,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
             onClick={handleSubmit}
             disabled={!formData.name || !formData.type}
           >
-            Create Campaign
+            {mode=='edit' ?'Edit Campaign' :'Create Campaign'}
           </button>
         </div>
       </div>

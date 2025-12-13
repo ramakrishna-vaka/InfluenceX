@@ -4,12 +4,16 @@ import '../css/Home.css';
 import type { Post } from '../../utils/Posts';
 import { useAuth } from '../../AuthProvider';
 import { useCampaignFilter } from '../../CampaignFilterContext';
+import CreateCampaignDialog from '../../components/js/CreateCampaignDialog';
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
+  const [selectedPostForEdit, setSelectedPostForEdit] = useState<Post | null>(null);
+
   
   const [filterCategory, setFilterCategory] = useState('all');
   const [showMyPosts, setShowMyPosts] = useState(false);
@@ -22,7 +26,9 @@ const Home: React.FC = () => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8080/posts');
+        const response = await fetch('http://localhost:8080/posts', {
+          credentials: 'include'
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch posts');
         }
@@ -151,9 +157,10 @@ const Home: React.FC = () => {
   };
 
   const handleApplyClick = (post: Post) => {
-    if (post.isMyPost) {
+    if (post.isCreatedByMe) {
       // Navigate to manage campaign page
-      window.location.href = `/manage-campaign/${post.id}`;
+      setSelectedPostForEdit(post);
+
     }
     else {
       // Navigate to apply page
@@ -337,7 +344,7 @@ const Home: React.FC = () => {
                       <button className="btn-primary" onClick={() => {
                         handleApplyClick(post);
                       }}>
-                        {post.isMyPost ? 'Manage Campaign' : 'Apply Now'}
+                        {post.isCreatedByMe ? 'Edit' : 'Apply Now'}
                       </button>
                       <button className="btn-secondary" onClick={() => setSelectedPost(post)}>
                         View Details
@@ -356,7 +363,12 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
-
+      <CreateCampaignDialog
+        isOpen={!!selectedPostForEdit}
+        onClose={() => setSelectedPostForEdit(null)}
+        post={selectedPostForEdit}
+        mode="edit"
+      />
        {/* Details Dialog */}
       {selectedPost && (
         <div className="dialog-overlay" onClick={() => setSelectedPost(null)}>
@@ -437,6 +449,7 @@ const Home: React.FC = () => {
         </div>
       )}
     </div>
+    
   );
 };
 

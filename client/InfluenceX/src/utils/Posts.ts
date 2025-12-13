@@ -17,6 +17,9 @@ export interface Post {
   hasApplied?: boolean;
   isMyPost?: boolean;
   applicationStatus?: 'pending' | 'accepted' | 'rejected';
+  isCreatedByMe?: boolean;
+  platformsNeeded: string[];
+  location: string;
 }
 
 export const handleCreateCampaign=()=>{
@@ -26,5 +29,7 @@ export const handleCreateCampaign=()=>{
 export interface CreateCampaignDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    userId?: number;
+  userId?: number;
+  post?: Post | null;
+  mode?: "create" | "edit";
 }

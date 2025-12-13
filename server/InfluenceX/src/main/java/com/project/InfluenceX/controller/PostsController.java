@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -29,10 +30,44 @@ public class PostsController {
     }
 
     @GetMapping("/posts")
-    public List<PostResponseDTO> getPosts()
-    {
-        return postsService.getPosts();
+    public List<PostResponseDTO> getPosts(HttpServletRequest request) {
+        try {
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return postsService.getPosts(null);
+            }
+
+            // Extract token
+            String token = Arrays.stream(cookies)
+                    .filter(c -> "authToken".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+
+            if (token == null) {
+                return postsService.getPosts(null);
+            }
+
+            // Extract email from token
+            String email = jwtService.extractEmail(token);
+            if (email == null) {
+                return postsService.getPosts(null);
+            }
+
+            User user = userRepository.findByEmail(email);
+            if (user == null || !jwtService.validateToken(token, user)) {
+                return postsService.getPosts(null);
+            }
+
+            // Auth success
+            return postsService.getPosts(user);
+
+        } catch (Exception e) {
+            System.out.println("Error in /posts: " + e.getMessage());
+            return postsService.getPosts(null);
+        }
     }
+
 
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable Long postId) {
@@ -79,6 +114,23 @@ public class PostsController {
             dto.setApplications(apps);
 
             return ResponseEntity.ok(dto);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/update/post/{postId}" , consumes = "multipart/form-data")
+    public ResponseEntity<?> updatePost(@PathVariable Long postId,@ModelAttribute PostRequestDTO postsDTO) {
+        try {
+            Posts post = postsService.getPostById(postId);
+            if(post==null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post already deleted");
+            }
+            if (postsDTO == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post data must not be null");
+            }
+            return postsService.updatePost(postsDTO,post);
 
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

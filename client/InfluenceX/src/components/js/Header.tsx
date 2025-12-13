@@ -17,6 +17,7 @@ import { useAuth } from '../../AuthProvider';
 import CreateCampaignDialog from './CreateCampaignDialog';
 import { useCampaignFilter } from '../../CampaignFilterContext';
 import type { FilterState } from '../../CampaignFilterContext';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 interface HeaderProps {
   onToggleNavbar: (pathname:string) => void;
@@ -32,11 +33,33 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   const [isOpen, setIsOpen] = useState(false);
   const close = () => { setIsOpen(false); }
   
   const { searchQuery, sortBy, filters,setSearchQuery,setFilters, setSortBy,clearAllFilters } = useCampaignFilter();
+
+
+// WebSocket for real-time notifications
+  const { notifications: realtimeNotifications } = useWebSocket(authUser?.id);
+  // Merge real-time notifications with existing ones
+  useEffect(() => {
+    if (realtimeNotifications.length > 0) {
+      setNotificationsList((prev) => {
+        const newNotifications = realtimeNotifications.filter(
+          (newNotif) => !prev.some((existing) => existing.id === newNotif.id)
+        );
+        return [...newNotifications, ...prev];
+      });
+    }
+  }, [realtimeNotifications]);
+
+  // Calculate unread count
+  useEffect(() => {
+    const count = notificationsList.filter(n => !n.readBy).length;
+    setUnreadCount(count);
+  }, [notificationsList]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -60,6 +83,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  //fetch notifications from rest api on mount
   useEffect(() => {
       const fetchNotifications = async () => {
         try {
@@ -82,8 +106,55 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
         }
       };
   
+       if (isLoggedIn) {
       fetchNotifications();
-    }, []);
+    }
+  }, [isLoggedIn]);
+
+   // Mark all as read when bell is clicked
+  const handleBellClick = async () => {
+    setShowNotifications(!showNotifications);
+    
+    if (!showNotifications && unreadCount > 0) {
+      try {
+        const response = await fetch('http://localhost:8080/post/notification/read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          // Mark all as read in local state
+          setNotificationsList(prev => 
+            prev.map(n => ({ ...n, readBy: true }))
+          );
+          setUnreadCount(0);
+        }
+      } catch (err) {
+        console.error('Error marking notifications as read:', err);
+      }
+    }
+  };
+
+  // Remove old read notifications (older than 24 hours)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      setNotificationsList(prev => 
+        prev.filter(n => {
+          if (!n.readBy) return true;
+          // Assuming you add createdAt field to notifications
+          // const notificationAge = now - new Date(n.createdAt).getTime();
+          // return notificationAge < 24 * 60 * 60 * 1000; // 24 hours
+          return true; // Keep all for now, add createdAt field for proper filtering
+        })
+      );
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const sortOptions = [
     { value: 'recent', label: 'Most Recent' },
@@ -327,16 +398,15 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
             <span>Create</span>
           </button>
           <CreateCampaignDialog isOpen={isOpen} onClose={close} userId={authUser?.id} />
-
-          {/* Notifications */}
+{/* Notifications */}
           <div className="notification-wrapper">
             <button 
               className="notification-btn"
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={handleBellClick}
             >
               <Bell size={20} />
-              {notifications > 0 && (
-                <span className="notification-count">{notifications}</span>
+              {unreadCount > 0 && (
+                <span className="notification-count">{unreadCount}</span>
               )}
             </button>
 
@@ -344,24 +414,26 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               <div className="notifications-dropdown">
                 <div className="notifications-header">
                   <h3>Notifications</h3>
-                  <span className="notifications-count">{notifications} new</span>
+                  <span className="notifications-count">{unreadCount} new</span>
                 </div>
                 <div className="notifications-list">
-                  {notificationsList.map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`notification-item ${notification.unread ? 'unread' : ''}`}
-                    >
-                      <div className="notification-content">
-                        <p className="notification-message">{notification.message}</p>
-                        <span className="notification-time">{notification.time}</span>
-                      </div>
-                      {notification.unread && <div className="unread-dot"></div>}
+                  {notificationsList.length === 0 ? (
+                    <div className="no-notifications">
+                      <p>No notifications yet</p>
                     </div>
-                  ))}
-                </div>
-                <div className="notifications-footer">
-                  <button className="view-all-btn">View All Notifications</button>
+                  ) : (
+                    notificationsList.map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={`notification-item ${!notification.readBy ? 'unread' : ''}`}
+                      >
+                        <div className="notification-content">
+                          <p className="notification-message">{notification.notification}</p>
+                        </div>
+                        {!notification.readBy && <div className="unread-dot"></div>}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}

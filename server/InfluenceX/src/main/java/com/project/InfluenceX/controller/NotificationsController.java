@@ -22,7 +22,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
 public class NotificationsController {
 
-    private NotificationsService notificationsService;
+    private final NotificationsService notificationsService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
 

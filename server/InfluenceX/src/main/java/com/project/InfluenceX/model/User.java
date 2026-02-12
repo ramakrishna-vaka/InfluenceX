@@ -43,6 +43,13 @@ public class User {
 //    @ManyToMany(mappedBy = "influencers")
 //    private List<Posts> influencedPosts;
 
+    @Column
+    private double averageRating;
+
+    @Column
+    private int ratingCount;
+
+
 
 
     public User() { }

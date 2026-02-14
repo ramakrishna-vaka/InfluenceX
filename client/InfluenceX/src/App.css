@@ -23,16 +23,6 @@ body {
   min-height: 100vh;
 }
 
-.main-app-content {
-  margin-left: 0px;
-  min-height: 100vh;
-  transition: margin-left 0.3s ease;
-}
-
-.main-app-content.navbar-open {
-  margin-left: 280px;
-  width: calc(100% - 280px);
-}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -40,11 +30,6 @@ body {
     margin-left: 240px;
     width: calc(100% - 240px);
   }
-}
-
-/* Hide header when using vertical navbar */
-.main-app-content header {
-  display: none;
 }
 
 /* Auth pages full width */
@@ -112,4 +97,16 @@ body {
 *:focus-visible {
   outline: 2px solid #6366f1;
   outline-offset: 2px;
+}
+
+.content-shell {
+  margin-left: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  background: #fafbfc;
+}
+
+.content-shell.navbar-open {
+  margin-left: 280px;
+  width: calc(100% - 280px);
 }

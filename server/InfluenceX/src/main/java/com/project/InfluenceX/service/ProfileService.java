@@ -1,9 +1,12 @@
 package com.project.InfluenceX.service;
 
+import com.project.InfluenceX.model.PhoneVerification;
 import com.project.InfluenceX.model.RequestDTO.ProfileRequestDTO;
 import com.project.InfluenceX.model.ResponseDTO.ProfileResponseDTO;
 import com.project.InfluenceX.model.User;
+import com.project.InfluenceX.repository.PhoneVerificationRepository;
 import com.project.InfluenceX.repository.ProfileRepository;
+import com.project.InfluenceX.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,14 +15,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Random;
 
 @Service
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final UserRepository userRepository;
+    private final PhoneVerificationRepository phoneVerificationRepository;
 
-    public ProfileService(ProfileRepository profileRepository){
+    public ProfileService(ProfileRepository profileRepository,UserRepository userRepository, PhoneVerificationRepository phoneVerificationRepository){
         this.profileRepository=profileRepository;
+        this.userRepository=userRepository;
+        this.phoneVerificationRepository=phoneVerificationRepository;
     }
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
@@ -81,7 +89,7 @@ public class ProfileService {
         user.setUpdatedAt(LocalDateTime.now());
 
         // Update verification status
-        updateVerificationStatus(user);
+        //updateVerificationStatus(user);
 
         profileRepository.save(user);
     }
@@ -89,25 +97,25 @@ public class ProfileService {
     /**
      * Update user verification status based on criteria
      */
-    private void updateVerificationStatus(User user) {
-        // User is verified if they have:
-        // 1. Phone number verified
-        // 2. Instagram connected
-        // 3. YouTube connected
-
-        boolean hasInstagram = user.getSocialMediaProfiles() != null &&
-                user.getSocialMediaProfiles().stream()
-                        .anyMatch(p -> "INSTAGRAM".equals(p.getPlatform().name()));
-
-        boolean hasYouTube = user.getSocialMediaProfiles() != null &&
-                user.getSocialMediaProfiles().stream()
-                        .anyMatch(p -> "YOUTUBE".equals(p.getPlatform().name()));
-
-        // For now, we'll check phoneNumber presence (actual verification would require a separate flow)
-        boolean hasPhone = user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty();
-
-        user.setVerified(hasPhone && hasInstagram && hasYouTube);
-    }
+//    private void updateVerificationStatus(User user) {
+//        // User is verified if they have:
+//        // 1. Phone number verified
+//        // 2. Instagram connected
+//        // 3. YouTube connected
+//
+//        boolean hasInstagram = user.getSocialMediaProfiles() != null &&
+//                user.getSocialMediaProfiles().stream()
+//                        .anyMatch(p -> "INSTAGRAM".equals(p.getPlatform().name()));
+//
+//        boolean hasYouTube = user.getSocialMediaProfiles() != null &&
+//                user.getSocialMediaProfiles().stream()
+//                        .anyMatch(p -> "YOUTUBE".equals(p.getPlatform().name()));
+//
+//        // For now, we'll check phoneNumber presence (actual verification would require a separate flow)
+//        boolean hasPhone = user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty();
+//
+//        user.setVerified(hasPhone && hasInstagram && hasYouTube);
+//    }
 
     /**
      * Map User entity to ProfileResponseDTO
@@ -123,7 +131,7 @@ public class ProfileService {
         response.setBio(user.getBio());
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
-        response.setVerified(user.isVerified());
+        //response.setVerified(user.isVerified());
         response.setCreatedAt(user.getCreatedAt());
 
         // Phone verified status (in production, this would come from a separate verification table)
@@ -239,4 +247,75 @@ public class ProfileService {
 //        }
         return "General";
     }
+
+
+    public void sendPhoneVerificationOtp(Long userId, String phone) {
+
+        // 1. Generate OTP
+        String otp = generateOtp();
+
+        // 2. Set expiry (5 minutes)
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+
+        // 3. Save to DB
+        PhoneVerification verification = new PhoneVerification();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        verification.setUser(user);
+
+        verification.setPhoneNumber(phone);
+        verification.setOtp(Integer.parseInt(otp));
+        verification.setExpiresAt(expiry);
+
+        phoneVerificationRepository.save(verification);
+
+        // 4. Send SMS
+        //smsService.sendOtp(phone, otp);
+        System.out.println("Generated Otp = "+otp);
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        return String.valueOf(100000 + random.nextInt(900000));
+    }
+
+    public void verifyPhoneOtp(Long userId, String phone, String otp) {
+
+        PhoneVerification verification =
+                phoneVerificationRepository
+                        .findTopByUser_IdAndPhoneNumberOrderByExpiresAtDesc(userId, phone)
+                        .orElseThrow(() -> new RuntimeException("OTP not found"));
+
+        if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP expired");
+        }
+
+        if (!String.valueOf(verification.getOtp()).equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // Mark user phone verified
+        User user = userRepository.findById(userId).orElseThrow();
+
+        user.setPhoneNumber(phone);
+        user.setVerified(true);
+
+        userRepository.save(user);
+    }
+
+
+    public void deletePhoneNumber(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+       user.setPhoneNumber(null);
+       user.setVerified(false);
+       userRepository.save(user);
+    }
+
+
+
+
+
 }

@@ -55,6 +55,11 @@ const Profile = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingContact, setSavingContact] = useState(false);
   const [connectingPlatform, setConnectingPlatform] = useState(null);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [phoneChanged, setPhoneChanged] = useState(false);
   
   const [profileData, setProfileData] = useState({
     id: '123',
@@ -62,6 +67,7 @@ const Profile = () => {
     email: 'john.doe@example.com',
     phone: '',
     location: 'San Francisco, CA',
+    address: '',
     bio: 'Digital creator passionate about tech, lifestyle, and travel. Helping brands connect with engaged audiences.',
     category: 'Technology',
     username: 'johndoe',
@@ -134,7 +140,7 @@ const Profile = () => {
         body: JSON.stringify({
           name: editForm.name,
           bio: editForm.bio,
-          phone: editForm.phone,
+          phone: editForm.phone ===""? null : editForm.phone,
           location: editForm.location,
           languages: editForm.languages,
           preferredCategories: editForm.preferredCategories
@@ -147,6 +153,8 @@ const Profile = () => {
       setProfileData(updatedData);
       setIsEditing(false);
       setSavingProfile(false);
+      setIsEditingContact(false);
+      setSavingContact(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       setSavingProfile(false);
@@ -162,6 +170,7 @@ const Profile = () => {
   const handleEditContact = () => {
     if (!isOwnProfile) return;
     setIsEditingContact(true);
+    setPhoneChanged(false);
     setEditForm({ ...profileData });
   };
 
@@ -179,7 +188,8 @@ const Profile = () => {
         credentials: 'include',
         body: JSON.stringify({
           phone: editForm.phone,
-          website: editForm.website
+          website: editForm.website,
+          address: editForm.address
         })
       });
 
@@ -205,26 +215,125 @@ const Profile = () => {
     if (!isOwnProfile || !editForm.phone) return;
     
     try {
-      // TODO: Implement phone verification flow
       const response = await fetch(`http://localhost:8080/api/profile/verify-phone`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({
-          phone: editForm.phone
+          phoneNumber: editForm.phone,
+          otp: null
+
         })
       });
 
       if (!response.ok) throw new Error('Failed to send verification code');
       
-      alert('Verification code sent to your phone number!');
-      // Here you would typically open a modal to enter the verification code
+      setOtpSent(true);
+      setShowOtpModal(true);
+      setOtp('');
     } catch (error) {
       console.error('Error verifying phone:', error);
       alert('Failed to send verification code. Please try again.');
     }
+  };
+
+  const handleSubmitOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      alert('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      setVerifyingOtp(true);
+      
+      const response = await fetch(`http://localhost:8080/api/profile/verify-phone`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          phoneNumber: editForm.phone,
+          otp: otp
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Invalid OTP');
+      }
+      
+      const updatedData = await response.json();
+      
+      // Update both profileData and editForm to prevent breaking
+      setProfileData(prevData => ({
+        ...prevData,
+        ...updatedData,
+        phone: updatedData.phone || prevData.phone,
+        phoneVerified: updatedData.phoneVerified !== undefined ? updatedData.phoneVerified : true
+      }));
+      
+      setEditForm(prevForm => ({
+        ...prevForm,
+        ...updatedData,
+        phone: updatedData.phone || prevForm.phone,
+        phoneVerified: updatedData.phoneVerified !== undefined ? updatedData.phoneVerified : true
+      }));
+      
+      setShowOtpModal(false);
+      setOtp('');
+      setOtpSent(false);
+      setVerifyingOtp(false);
+      setPhoneChanged(false);
+      
+      alert('Phone number verified successfully!');
+    } catch (error) {
+      console.error('Error submitting OTP:', error);
+      setVerifyingOtp(false);
+      alert(error.message || 'Failed to verify OTP. Please try again.');
+    }
+  };
+
+  const handleCloseOtpModal = () => {
+    setShowOtpModal(false);
+    setOtp('');
+    setOtpSent(false);
+  };
+
+  const handleClearPhone = async () => {
+
+    if (window.confirm('Are you sure you want to remove your phone number?')) {
+      try {
+      const response = await fetch(`http://localhost:8080/api/profile/delete-phone`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete phone number');
+  
+    } catch (error) {
+      console.error('Error deleting phone number:', error);
+      alert('Failed to delete phone number. Please try again.');
+    }
+    };
+    setProfileData(prevData => ({
+        ...prevData,
+        phone: '',
+        phoneVerified: false
+      }));
+      setEditForm(prev => ({
+        ...prev,
+        phone: ''
+      }));
+      setPhoneChanged(true);
+  };
+
+  const isValidPhone = (phone) => {
+    if (!phone) return false;
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.length === 10;
   };
 
   const handleInputChange = (field, value) => {
@@ -232,6 +341,13 @@ const Profile = () => {
       ...prev,
       [field]: value
     }));
+    
+    // Track if phone number has changed
+    if (field === 'phone' && value !== profileData.phone) {
+      setPhoneChanged(true);
+    } else if (field === 'phone' && value === profileData.phone) {
+      setPhoneChanged(false);
+    }
   };
 
   const handleLanguageToggle = (language) => {
@@ -714,7 +830,7 @@ const Profile = () => {
                   ) : (
                     <div className="profile-edit-actions-inline">
                       <button 
-                        onClick={handleSaveContact} 
+                        onClick={handleSave} 
                         className="profile-btn-small profile-btn-success"
                         disabled={savingContact}
                       >
@@ -761,17 +877,38 @@ const Profile = () => {
                     {!profileData.phoneVerified && profileData.phone && (
                       <span className="profile-form-verify-badge">Not Verified</span>
                     )}
+                    {profileData.phoneVerified && profileData.phone && (
+                      <span className="profile-form-verified-badge">
+                        <CheckCircle2 size={12} />
+                        Verified
+                      </span>
+                    )}
                   </label>
                   {isEditingContact ? (
                     <div className="profile-phone-input-group">
                       <input
                         type="tel"
                         value={editForm.phone || ''}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          if (value.length <= 10) {
+                            handleInputChange('phone', value);
+                          }
+                        }}
                         className="profile-form-input"
-                        placeholder="+91 XXXXX XXXXX"
+                        placeholder="10-digit phone number"
                       />
-                      {editForm.phone && !profileData.phoneVerified && (
+                      {editForm.phone && (
+                        <button 
+                          className="profile-phone-clear-btn"
+                          onClick={handleClearPhone}
+                          type="button"
+                          title="Clear phone number"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
+                      {editForm.phone && isValidPhone(editForm.phone) && phoneChanged && !profileData.phoneVerified && (
                         <button 
                           className="profile-verify-btn"
                           onClick={handleVerifyPhone}
@@ -789,7 +926,7 @@ const Profile = () => {
                           <CheckCircle2 size={16} className="profile-verified-icon-small" />
                         )}
                       </div>
-                      {!profileData.phoneVerified && profileData.phone && isOwnProfile && (
+                      {!profileData.phoneVerified && profileData.phone && isOwnProfile && isValidPhone(profileData.phone) && (
                         <button 
                           className="profile-verify-btn-inline"
                           onClick={handleVerifyPhone}
@@ -805,9 +942,21 @@ const Profile = () => {
                 <div className="profile-form-group">
                   <label className="profile-form-label">
                     <MapPin size={16} />
-                    Location
+                    Address
                   </label>
-                  <div className="profile-form-display">{profileData.location || 'Not set'}</div>
+                  {isEditingContact ? (
+                    <textarea
+                      value={editForm.address || ''}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      className="profile-form-textarea"
+                      placeholder="Enter your full address"
+                      rows={3}
+                    />
+                  ) : (
+                    <div className="profile-form-display">
+                      {profileData.address || 'Not set'}
+                    </div>
+                  )}
                 </div>
 
                 <div className="profile-form-group">
@@ -1092,6 +1241,75 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="profile-otp-modal-overlay" onClick={handleCloseOtpModal}>
+          <div className="profile-otp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-otp-modal-header">
+              <h3 className="profile-otp-modal-title">Verify Phone Number</h3>
+              <button 
+                className="profile-otp-modal-close"
+                onClick={handleCloseOtpModal}
+                disabled={verifyingOtp}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="profile-otp-modal-body">
+              <p className="profile-otp-modal-text">
+                We've sent a 6-digit verification code to
+              </p>
+              <p className="profile-otp-modal-phone">{editForm.phone}</p>
+              
+              <div className="profile-otp-input-wrapper">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 6) {
+                      setOtp(value);
+                    }
+                  }}
+                  className="profile-otp-input"
+                  placeholder="Enter 6-digit OTP"
+                  maxLength={6}
+                  autoFocus
+                  disabled={verifyingOtp}
+                />
+              </div>
+
+              <button
+                onClick={handleSubmitOtp}
+                className="profile-otp-submit-btn"
+                disabled={verifyingOtp || otp.length !== 6}
+              >
+                {verifyingOtp ? (
+                  <>
+                    <Loader size={20} className="profile-spinner-icon" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={20} />
+                    Verify & Submit
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleVerifyPhone}
+                className="profile-otp-resend-btn"
+                disabled={verifyingOtp}
+              >
+                Resend OTP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

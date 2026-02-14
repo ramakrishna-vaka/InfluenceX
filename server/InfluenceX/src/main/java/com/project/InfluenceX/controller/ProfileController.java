@@ -1,5 +1,6 @@
 package com.project.InfluenceX.controller;
 
+import com.project.InfluenceX.model.RequestDTO.PhoneNumberVerificationRequestDTO;
 import com.project.InfluenceX.model.RequestDTO.ProfileRequestDTO;
 import com.project.InfluenceX.model.ResponseDTO.ProfileResponseDTO;
 import com.project.InfluenceX.model.User;
@@ -157,4 +158,51 @@ public class ProfileController {
         errorResponse.put("message", message);
         return errorResponse;
     }
+
+
+    /**
+     * phone number verification
+     */
+    @PutMapping("/verify-phone")
+    public ResponseEntity<?> generateOtp(@RequestBody PhoneNumberVerificationRequestDTO dto, HttpServletRequest request){
+        Long userId=getCurrentUserId(request);
+        String phoneNumber=dto.getPhoneNumber();
+
+        profileService.sendPhoneVerificationOtp(userId, phoneNumber);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "OTP sent successfully"
+        ));
+    }
+
+    @PutMapping("/confirm-phone")
+    public ResponseEntity<?> confirmOTP(@RequestBody PhoneNumberVerificationRequestDTO dto,HttpServletRequest request) {
+
+        Long userId = getCurrentUserId(request);
+
+        String phone = dto.getPhoneNumber();
+        String otp = dto.getOtp();
+
+        profileService.verifyPhoneOtp(userId, phone, otp);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Phone verified successfully"
+        ));
+    }
+
+    @GetMapping("/delete-phone")
+    public ResponseEntity<?> deletePhone(HttpServletRequest request) {
+
+        Long userId = getCurrentUserId(request);
+
+        profileService.deletePhoneNumber(userId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Phone number removed successfully"
+        ));
+    }
+
 }

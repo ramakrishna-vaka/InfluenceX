@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class ProfileService {
      * Update user profile
      */
     @Transactional
-    public ProfileResponseDTO updateProfile(Long userId, @Valid ProfileRequestDTO request) {
+    public ProfileResponseDTO updateProfile(Long userId, @Valid ProfileRequestDTO request) throws Exception{
         User user = profileRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
@@ -63,12 +64,39 @@ public class ProfileService {
         if (request.getPhone() != null) {
             user.setPhoneNumber(request.getPhone());
             // Note: Actual phone verification should be triggered separately
+        }else{
+            user.setPhoneNumber("");
+            user.setPhoneVerified(false);
         }
 
         if (request.getLocation() != null) {
             user.setLocation(request.getLocation());
         }
 
+        if(request.getAddress()!=null){
+            user.setAddress(request.getAddress());
+        }
+
+        if(request.getLanguagesKnown()!=null){
+            user.setLanguagesKnown(request.getLanguagesKnown());
+        }
+
+        if(request.getWebsite()!=null){
+            user.setWebsite(request.getWebsite());
+        }
+
+        if(request.getPreferredCategories()!=null){
+            user.setPreferredCategory(request.getPreferredCategories());
+        }
+        try {
+            if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+                byte[] imageBytes = request.getAvatar().getBytes();
+                user.setImageData(imageBytes);
+            }
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            throw e;
+        }
         user.setUpdatedAt(LocalDateTime.now());
 
         User updatedUser = profileRepository.save(user);
@@ -129,8 +157,7 @@ public class ProfileService {
         response.setPhone(user.getPhoneNumber());
         response.setLocation(user.getLocation());
         response.setBio(user.getBio());
-        response.setUsername(user.getUsername());
-        response.setRole(user.getRole());
+        //response.setUsername(user.getUsername());
         //response.setVerified(user.isVerified());
         response.setCreatedAt(user.getCreatedAt());
 
@@ -143,8 +170,8 @@ public class ProfileService {
             response.setAvatar("data:image/jpeg;base64," + base64Image);
         }
 
-        // Category - derive from role or posts
-        response.setCategory(deriveCategory(user));
+        response.setPreferredCategories(user.getPreferredCategory());
+        response.setLanguagesKnown(user.getLanguagesKnown());
 
         // Map social media profiles
 //        if (user.getSocialMediaProfiles() != null) {

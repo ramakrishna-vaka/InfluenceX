@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -64,8 +65,8 @@ public class ProfileController {
      * Update current user's profile
      * PUT /api/profile
      */
-    @PutMapping
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody ProfileRequestDTO profileData, HttpServletRequest request) {
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProfile(@Valid @ModelAttribute ProfileRequestDTO profileData, HttpServletRequest request) {
         try {
             Long currentUserId = getCurrentUserId(request);
             ProfileResponseDTO updatedProfile = profileService.updateProfile(currentUserId, profileData);

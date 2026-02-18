@@ -24,6 +24,10 @@ public class ProfileResponseDTO {
     private List<PostSummaryDTO> createdPosts;
     private List<CollaborationSummaryDTO> collaborations;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private List<String> preferredCategories;
+    private List<String> languagesKnown;
+
 
     // Inner class for stats
     public static class ProfileStatsDTO {
@@ -252,4 +256,25 @@ public class ProfileResponseDTO {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public void setUpdatedAt(LocalDateTime updatedAt){
+        this.updatedAt=updatedAt;
+    }
+
+    public void setPreferredCategories(List<String> preferredCategories){
+        this.preferredCategories=preferredCategories;
+    }
+
+    public List<String> getPreferredCategories() {
+        return preferredCategories;
+    }
+
+    public List<String> getLanguagesKnown() {
+        return languagesKnown;
+    }
+
+
+    public void setLanguagesKnown(List<String> languagesKnown){
+        this.languagesKnown=languagesKnown;
+    }
 }

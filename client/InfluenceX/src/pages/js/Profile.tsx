@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   User, 
@@ -42,6 +42,7 @@ const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { authUser } = useAuth();
+  const fileInputRef = useRef(null);
   
   const currentUserId = authUser?.id || null;
   const isOwnProfile = currentUserId ?
@@ -60,6 +61,8 @@ const Profile = () => {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [phoneChanged, setPhoneChanged] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   
   const [profileData, setProfileData] = useState({
     id: '123',
@@ -76,7 +79,7 @@ const Profile = () => {
     role: 'INFLUENCER',
     verified: false,
     phoneVerified: false,
-    languages: ['English', 'Hindi'],
+    languagesKnown: ['English', 'Hindi'],
     preferredCategories: ['Technology', 'Lifestyle'],
     socialMediaProfiles: [],
     stats: {
@@ -106,8 +109,9 @@ const Profile = () => {
         
         if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
-        setProfileData(data);
-        setEditForm(data);
+         const parsed = parseProfileData(data);
+        setProfileData(parsed);
+        setEditForm(parsed);
         
         setLoading(false);
       } catch (error) {
@@ -119,42 +123,122 @@ const Profile = () => {
     fetchUserProfile();
   }, [userId, currentUserId]);
 
+  const parseProfileData = (data: any) => {
+  return {
+    ...data,
+    languagesKnown: normalizeArray(data.languagesKnown),
+    preferredCategories: normalizeArray(data.preferredCategories),
+  };
+};
+
+  
+  const normalizeArray = (arr: any): string[] => {
+  if (!arr) return [];
+
+  // Already correct format
+  if (Array.isArray(arr) && arr.every(v => typeof v === "string") && !arr.join("").includes("[\""))
+    return arr;
+
+  try {
+    const joined = arr.join("");
+
+    // Extract words between quotes safely
+    const matches = joined.match(/"([^"]+)"/g);
+
+    if (!matches) return [];
+
+    return matches.map(v => v.replace(/"/g, ""));
+
+  } catch {
+    return [];
+  }
+};
+
+
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleEdit = () => {
     if (!isOwnProfile) return;
     setIsEditing(true);
     setEditForm({ ...profileData });
+    setAvatarFile(null);
+    setAvatarPreview(null);
+  };
+
+  const isValidPhone = (phone) => {
+    if (!phone) return true; // Empty phone is valid
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.length === 10;
+  };
+
+  const canSaveProfile = () => {
+    if (editForm.phone && editForm.phone !== '') {
+      if (!isValidPhone(editForm.phone)) return false;
+      if (editForm.phone !== profileData.phone && !editForm.phoneVerified) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const handleSave = async () => {
-    if (!isOwnProfile) return;
+    if (!isOwnProfile || !canSaveProfile()) return;
     
     try {
       setSavingProfile(true);
       
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('bio', editForm.bio);
+       if(editForm.phone !=null && editForm.phone !== '') {
+        formData.append('phone', editForm.phone);
+      } 
+      formData.append('location', editForm.location);
+      if(editForm.website && editForm.website !== '')
+        formData.append('website', editForm.website || '');
+      if (editForm.address && editForm.address !== '') {
+        formData.append('address', editForm.address);
+      }
+      if (JSON.stringify(editForm.languages) != undefined) {
+        formData.append('languagesKnown', JSON.stringify(editForm.languages));
+      }
+      if(JSON.stringify(editForm.preferredCategories) != undefined && JSON.stringify(editForm.preferredCategories) != '[]') {
+        formData.append('preferredCategories', JSON.stringify(editForm.preferredCategories));
+      }
+      
+      if (avatarFile) {
+        formData.append('avatar', avatarFile);
+      }
+
       const response = await fetch(`http://localhost:8080/api/profile`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         credentials: 'include',
-        body: JSON.stringify({
-          name: editForm.name,
-          bio: editForm.bio,
-          phone: editForm.phone ===""? null : editForm.phone,
-          location: editForm.location,
-          languages: editForm.languages,
-          preferredCategories: editForm.preferredCategories
-        })
+        body: formData
       });
 
       if (!response.ok) throw new Error('Failed to update profile');
       
       const updatedData = await response.json();
       setProfileData(updatedData);
+      setEditForm(updatedData);
       setIsEditing(false);
-      setSavingProfile(false);
       setIsEditingContact(false);
+      setSavingProfile(false);
       setSavingContact(false);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      setPhoneChanged(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       setSavingProfile(false);
@@ -165,6 +249,10 @@ const Profile = () => {
   const handleCancel = () => {
     setEditForm({ ...profileData });
     setIsEditing(false);
+    setIsEditingContact(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setPhoneChanged(false);
   };
 
   const handleEditContact = () => {
@@ -175,30 +263,44 @@ const Profile = () => {
   };
 
   const handleSaveContact = async () => {
-    if (!isOwnProfile) return;
+    if (!isOwnProfile || !canSaveProfile()) return;
     
     try {
       setSavingContact(true);
       
-      const response = await fetch(`http://localhost:8080/api/profile/contact`, {
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('bio', editForm.bio);
+      if(editForm.phone !=null && editForm.phone !== '') {
+        formData.append('phone', editForm.phone);
+      } 
+      formData.append('location', editForm.location);
+      if(editForm.website && editForm.website !== '')
+        formData.append('website', editForm.website || '');
+      if (editForm.address && editForm.address !== '') {
+        formData.append('address', editForm.address);
+      }
+      if (JSON.stringify(editForm.languages) != undefined) {
+        formData.append('languagesKnown', JSON.stringify(editForm.languages));
+      }
+      if(JSON.stringify(editForm.preferredCategories) != undefined && JSON.stringify(editForm.preferredCategories) != '[]') {
+        formData.append('preferredCategories', JSON.stringify(editForm.preferredCategories));
+      }
+
+      const response = await fetch(`http://localhost:8080/api/profile`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         credentials: 'include',
-        body: JSON.stringify({
-          phone: editForm.phone,
-          website: editForm.website,
-          address: editForm.address
-        })
+        body: formData
       });
 
       if (!response.ok) throw new Error('Failed to update contact details');
       
       const updatedData = await response.json();
       setProfileData(updatedData);
+      setEditForm(updatedData);
       setIsEditingContact(false);
       setSavingContact(false);
+      setPhoneChanged(false);
     } catch (error) {
       console.error('Error updating contact details:', error);
       setSavingContact(false);
@@ -209,6 +311,7 @@ const Profile = () => {
   const handleCancelContact = () => {
     setEditForm({ ...profileData });
     setIsEditingContact(false);
+    setPhoneChanged(false);
   };
 
   const handleVerifyPhone = async () => {
@@ -224,7 +327,6 @@ const Profile = () => {
         body: JSON.stringify({
           phoneNumber: editForm.phone,
           otp: null
-
         })
       });
 
@@ -265,21 +367,10 @@ const Profile = () => {
         throw new Error(error.message || 'Invalid OTP');
       }
       
-      const updatedData = await response.json();
-      
-      // Update both profileData and editForm to prevent breaking
-      setProfileData(prevData => ({
-        ...prevData,
-        ...updatedData,
-        phone: updatedData.phone || prevData.phone,
-        phoneVerified: updatedData.phoneVerified !== undefined ? updatedData.phoneVerified : true
-      }));
-      
-      setEditForm(prevForm => ({
-        ...prevForm,
-        ...updatedData,
-        phone: updatedData.phone || prevForm.phone,
-        phoneVerified: updatedData.phoneVerified !== undefined ? updatedData.phoneVerified : true
+      // Mark as verified in editForm only - actual save happens on profile save
+      setEditForm(prev => ({
+        ...prev,
+        phoneVerified: true
       }));
       
       setShowOtpModal(false);
@@ -288,7 +379,7 @@ const Profile = () => {
       setVerifyingOtp(false);
       setPhoneChanged(false);
       
-      alert('Phone number verified successfully!');
+      alert('Phone number verified successfully! Click "Save Changes" to persist.');
     } catch (error) {
       console.error('Error submitting OTP:', error);
       setVerifyingOtp(false);
@@ -302,38 +393,13 @@ const Profile = () => {
     setOtpSent(false);
   };
 
-  const handleClearPhone = async () => {
-
-    if (window.confirm('Are you sure you want to remove your phone number?')) {
-      try {
-      const response = await fetch(`http://localhost:8080/api/profile/delete-phone`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (!response.ok) throw new Error('Failed to delete phone number');
-  
-    } catch (error) {
-      console.error('Error deleting phone number:', error);
-      alert('Failed to delete phone number. Please try again.');
-    }
-    };
-    setProfileData(prevData => ({
-        ...prevData,
-        phone: '',
-        phoneVerified: false
-      }));
-      setEditForm(prev => ({
-        ...prev,
-        phone: ''
-      }));
-      setPhoneChanged(true);
-  };
-
-  const isValidPhone = (phone) => {
-    if (!phone) return false;
-    const cleanPhone = phone.replace(/\D/g, '');
-    return cleanPhone.length === 10;
+  const handleClearPhone = () => {
+    setEditForm(prev => ({
+      ...prev,
+      phone: '',
+      phoneVerified: false
+    }));
+    setPhoneChanged(true);
   };
 
   const handleInputChange = (field, value) => {
@@ -343,10 +409,19 @@ const Profile = () => {
     }));
     
     // Track if phone number has changed
-    if (field === 'phone' && value !== profileData.phone) {
-      setPhoneChanged(true);
-    } else if (field === 'phone' && value === profileData.phone) {
-      setPhoneChanged(false);
+    if (field === 'phone') {
+      if (value !== profileData.phone) {
+        setPhoneChanged(true);
+        // Phone changed, mark as unverified
+        setEditForm(prev => ({ ...prev, phoneVerified: false }));
+      } else {
+        setPhoneChanged(false);
+        // Phone restored to original, restore verification status
+        setEditForm(prev => ({ 
+          ...prev, 
+          phoneVerified: profileData.phoneVerified 
+        }));
+      }
     }
   };
 
@@ -467,8 +542,8 @@ const Profile = () => {
             {/* Avatar */}
             <div className="profile-avatar-wrapper">
               <div className="profile-avatar">
-                {profileData.avatar ? (
-                  <img src={profileData.avatar} alt="Profile" />
+                {avatarPreview || profileData.avatar ? (
+                  <img src={avatarPreview || profileData.avatar} alt="Profile" />
                 ) : (
                   profileData.name.charAt(0).toUpperCase()
                 )}
@@ -479,9 +554,21 @@ const Profile = () => {
                 )}
               </div>
               {isEditing && isOwnProfile && (
-                <button className="profile-avatar-button">
-                  <Camera size={16} />
-                </button>
+                <>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
+                  <button 
+                    className="profile-avatar-button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Camera size={16} />
+                  </button>
+                </>
               )}
             </div>
 
@@ -523,7 +610,7 @@ const Profile = () => {
                           key={lang}
                           type="button"
                           onClick={() => handleLanguageToggle(lang)}
-                          className={`profile-tag-option ${(editForm.languages || []).includes(lang) ? 'selected' : ''}`}
+                          className={`profile-tag-option ${(editForm.languagesKnown || []).includes(lang) ? 'selected' : ''}`}
                         >
                           {lang}
                         </button>
@@ -561,7 +648,6 @@ const Profile = () => {
                       </span>
                     )}
                   </h1>
-                  <p className="profile-username">@{profileData.username}</p>
                   
                   {profileData.bio ? (
                     <p className="profile-bio">{profileData.bio}</p>
@@ -575,20 +661,22 @@ const Profile = () => {
               )}
 
               <div className="profile-badges">
-                <div className="profile-badge">
-                  <MapPin size={16} />
-                  {profileData.location || (isOwnProfile && isEditing ? 'Add your location' : 'Location not set')}
-                </div>
+                {!isEditing && (
+                  <div className="profile-badge">
+                    <MapPin size={16} />
+                    {profileData.location || (isOwnProfile ? 'Add your location' : 'Location not set')}
+                  </div>
+                )}
                 {profileData.stats?.avgRating > 0 && (
                   <div className="profile-badge rating">
                     <Award size={16} />
                     {profileData?.rating || '5.0'}
                   </div>
                 )}
-                {profileData.languages && profileData.languages.length > 0 && !isEditing && (
+                {profileData.languagesKnown && profileData.languagesKnown.length > 0 && !isEditing && (
                   <div className="profile-badge">
                     <Languages size={16} />
-                    {profileData.languages.join(', ')}
+                    {profileData.languagesKnown.join(', ')}
                   </div>
                 )}
                 {profileData.preferredCategories && profileData.preferredCategories.length > 0 && !isEditing && (
@@ -626,7 +714,7 @@ const Profile = () => {
                     <button 
                       onClick={handleSave} 
                       className="profile-btn profile-btn-success"
-                      disabled={savingProfile}
+                      disabled={savingProfile || !canSaveProfile()}
                     >
                       {savingProfile ? (
                         <>
@@ -830,9 +918,9 @@ const Profile = () => {
                   ) : (
                     <div className="profile-edit-actions-inline">
                       <button 
-                        onClick={handleSave} 
+                        onClick={handleSaveContact} 
                         className="profile-btn-small profile-btn-success"
-                        disabled={savingContact}
+                        disabled={savingContact || !canSaveProfile()}
                       >
                         {savingContact ? (
                           <>
@@ -874,10 +962,10 @@ const Profile = () => {
                   <label className="profile-form-label">
                     <Phone size={16} />
                     Phone Number
-                    {!profileData.phoneVerified && profileData.phone && (
+                    {!profileData.phoneVerified && profileData.phone && !isEditingContact && (
                       <span className="profile-form-verify-badge">Not Verified</span>
                     )}
-                    {profileData.phoneVerified && profileData.phone && (
+                    {profileData.phoneVerified && profileData.phone && !isEditingContact && (
                       <span className="profile-form-verified-badge">
                         <CheckCircle2 size={12} />
                         Verified
@@ -885,38 +973,42 @@ const Profile = () => {
                     )}
                   </label>
                   {isEditingContact ? (
-                    <div className="profile-phone-input-group">
-                      <input
-                        type="tel"
-                        value={editForm.phone || ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '');
-                          if (value.length <= 10) {
-                            handleInputChange('phone', value);
-                          }
-                        }}
-                        className="profile-form-input"
-                        placeholder="10-digit phone number"
-                      />
-                      {editForm.phone && (
-                        <button 
-                          className="profile-phone-clear-btn"
-                          onClick={handleClearPhone}
-                          type="button"
-                          title="Clear phone number"
-                        >
-                          <X size={18} />
-                        </button>
-                      )}
-                      {editForm.phone && isValidPhone(editForm.phone) && phoneChanged && !profileData.phoneVerified && (
-                        <button 
-                          className="profile-verify-btn"
-                          onClick={handleVerifyPhone}
-                          type="button"
-                        >
-                          Verify
-                        </button>
-                      )}
+                    <div className="profile-phone-edit-container">
+                      <div className="profile-phone-input-group">
+                        <input
+                          type="tel"
+                          value={editForm.phone || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            if (value.length <= 10) {
+                              handleInputChange('phone', value);
+                            }
+                          }}
+                          className="profile-form-input"
+                          placeholder="10-digit phone number"
+                        />
+                      </div>
+                      <div className="profile-phone-actions">
+                        {editForm.phone && (
+                          <button 
+                            className="profile-phone-clear-btn-new"
+                            onClick={handleClearPhone}
+                            type="button"
+                          >
+                            <X size={16} />
+                            Clear
+                          </button>
+                        )}
+                        {editForm.phone && isValidPhone(editForm.phone) && phoneChanged && !editForm.phoneVerified && (
+                          <button 
+                            className="profile-verify-btn"
+                            onClick={handleVerifyPhone}
+                            type="button"
+                          >
+                            Verify
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="profile-form-display-with-action">
@@ -926,15 +1018,6 @@ const Profile = () => {
                           <CheckCircle2 size={16} className="profile-verified-icon-small" />
                         )}
                       </div>
-                      {!profileData.phoneVerified && profileData.phone && isOwnProfile && isValidPhone(profileData.phone) && (
-                        <button 
-                          className="profile-verify-btn-inline"
-                          onClick={handleVerifyPhone}
-                          type="button"
-                        >
-                          Verify Now
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>

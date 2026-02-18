@@ -479,6 +479,14 @@
   transition: all 0.3s ease;
 }
 
+.profile-btn-small:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .profile-btn-small.profile-btn-primary {
   background: var(--gradient-primary);
   color: white;
@@ -1091,6 +1099,38 @@
   margin-left: auto;
 }
 
+/* Phone Input Edit Container */
+.profile-phone-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-phone-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-phone-clear-btn-new {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-phone-clear-btn-new:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
 /* Social Media Grid */
 .profile-social-grid {
   display: grid;
@@ -1632,5 +1672,39 @@
   .profile-otp-input {
     font-size: 20px;
     letter-spacing: 6px;
+  }
+}
+
+/* Camera button positioned BELOW the avatar image */
+.profile-avatar-button-below {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  width: 128px;
+  padding: 7px 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.profile-avatar-button-below:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.45);
+}
+
+@media (max-width: 640px) {
+  .profile-avatar-button-below {
+    width: 96px;
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }

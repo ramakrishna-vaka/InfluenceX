@@ -44,10 +44,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserEnum role;
 
-    @Column
-    private String preferredCategory;
+    @ElementCollection
+    @CollectionTable(name = "user_preferred_categories", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "category")
+    private List<String> preferredCategory;
 
-    @Column
+    @ElementCollection
+    @CollectionTable(name = "user_languages", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "language")
     private List<String> languagesKnown;
 
     @Column
@@ -55,6 +59,9 @@ public class User {
 
     @Column
     private String website;
+
+    @Column
+    private String address;
 
     // -------- SOCIAL MEDIA --------
 
@@ -174,4 +181,45 @@ public class User {
 
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+
+    public List<String> getPreferredCategory() {
+        return preferredCategory;
+    }
+
+    public void setPreferredCategory(List<String> preferredCategory) {
+        this.preferredCategory = preferredCategory;
+    }
+
+    public List<String> getLanguagesKnown() {
+        return languagesKnown;
+    }
+
+    public void setLanguagesKnown(List<String> languagesKnown) {
+        this.languagesKnown = languagesKnown;
+    }
+
+    public boolean isPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setPhoneVerified(boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public void setAddress(String address){
+        this.address=address;
+    }
+    public String getAddress(){
+        return address;
+    }
+
+
 }

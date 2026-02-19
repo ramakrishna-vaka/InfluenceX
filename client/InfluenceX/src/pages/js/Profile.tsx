@@ -136,23 +136,27 @@ const Profile = () => {
   if (!arr) return [];
 
   // Already correct format
-  if (Array.isArray(arr) && arr.every(v => typeof v === "string") && !arr.join("").includes("[\""))
+  if (Array.isArray(arr) && arr.every(v => typeof v === "string") && !arr.join("").includes("["))
     return arr;
 
   try {
-    const joined = arr.join("");
-
-    // Extract words between quotes safely
-    const matches = joined.match(/"([^"]+)"/g);
-
-    if (!matches) return [];
-
-    return matches.map(v => v.replace(/"/g, ""));
+    // Extract each element, clean unwanted characters, and return clean array
+    return arr
+      .map((item: string) =>
+        item
+          .replace(/\\/g, "")   // remove backslashes \
+          .replace(/"/g, "")    // remove double quotes "
+          .replace(/\[/g, "")   // remove [
+          .replace(/\]/g, "")   // remove ]
+          .trim()
+      )
+      .filter((item: string) => item.length > 0); // remove empty strings
 
   } catch {
     return [];
   }
 };
+
 
 
 
@@ -182,13 +186,17 @@ const Profile = () => {
     return cleanPhone.length === 10;
   };
 
-  const canSaveProfile = () => {
+  const canSaveContact = () => {
     if (editForm.phone && editForm.phone !== '') {
       if (!isValidPhone(editForm.phone)) return false;
       if (editForm.phone !== profileData.phone && !editForm.phoneVerified) {
         return false;
       }
     }
+    return true;
+  };
+
+  const canSaveProfile = () => {
     return true;
   };
 
@@ -210,8 +218,8 @@ const Profile = () => {
       if (editForm.address && editForm.address !== '') {
         formData.append('address', editForm.address);
       }
-      if (JSON.stringify(editForm.languages) != undefined) {
-        formData.append('languagesKnown', JSON.stringify(editForm.languages));
+      if (JSON.stringify(editForm.languagesKnown) != undefined) {
+        formData.append('languagesKnown', JSON.stringify(editForm.languagesKnown));
       }
       if(JSON.stringify(editForm.preferredCategories) != undefined && JSON.stringify(editForm.preferredCategories) != '[]') {
         formData.append('preferredCategories', JSON.stringify(editForm.preferredCategories));
@@ -230,8 +238,13 @@ const Profile = () => {
       if (!response.ok) throw new Error('Failed to update profile');
       
       const updatedData = await response.json();
-      setProfileData(updatedData);
-      setEditForm(updatedData);
+      const parsedData = {
+        ...updatedData,
+        languagesKnown: normalizeArray(updatedData.languagesKnown),
+        preferredCategories: normalizeArray(updatedData.preferredCategories),
+      }
+      setProfileData(parsedData);
+      setEditForm(parsedData);
       setIsEditing(false);
       setIsEditingContact(false);
       setSavingProfile(false);
@@ -263,7 +276,7 @@ const Profile = () => {
   };
 
   const handleSaveContact = async () => {
-    if (!isOwnProfile || !canSaveProfile()) return;
+    if (!isOwnProfile || !canSaveContact()) return;
     
     try {
       setSavingContact(true);
@@ -280,8 +293,8 @@ const Profile = () => {
       if (editForm.address && editForm.address !== '') {
         formData.append('address', editForm.address);
       }
-      if (JSON.stringify(editForm.languages) != undefined) {
-        formData.append('languagesKnown', JSON.stringify(editForm.languages));
+      if (JSON.stringify(editForm.languagesKnown) != undefined) {
+        formData.append('languagesKnown', JSON.stringify(editForm.languagesKnown));
       }
       if(JSON.stringify(editForm.preferredCategories) != undefined && JSON.stringify(editForm.preferredCategories) != '[]') {
         formData.append('preferredCategories', JSON.stringify(editForm.preferredCategories));
@@ -296,8 +309,13 @@ const Profile = () => {
       if (!response.ok) throw new Error('Failed to update contact details');
       
       const updatedData = await response.json();
-      setProfileData(updatedData);
-      setEditForm(updatedData);
+       const parsedData = {
+        ...updatedData,
+        languagesKnown: normalizeArray(updatedData.languagesKnown),
+        preferredCategories: normalizeArray(updatedData.preferredCategories),
+      }
+      setProfileData(parsedData);
+      setEditForm(parsedData);
       setIsEditingContact(false);
       setSavingContact(false);
       setPhoneChanged(false);
@@ -427,12 +445,12 @@ const Profile = () => {
 
   const handleLanguageToggle = (language) => {
     setEditForm(prev => {
-      const currentLanguages = prev.languages || [];
+      const currentLanguages = prev.languagesKnown || [];
       const hasLanguage = currentLanguages.includes(language);
       
       return {
         ...prev,
-        languages: hasLanguage 
+        languagesKnown: hasLanguage 
           ? currentLanguages.filter(l => l !== language)
           : [...currentLanguages, language]
       };
@@ -920,7 +938,7 @@ const Profile = () => {
                       <button 
                         onClick={handleSaveContact} 
                         className="profile-btn-small profile-btn-success"
-                        disabled={savingContact || !canSaveProfile()}
+                        disabled={savingContact || !canSaveContact()}
                       >
                         {savingContact ? (
                           <>

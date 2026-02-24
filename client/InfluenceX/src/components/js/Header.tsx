@@ -40,6 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   
   const { searchQuery, sortBy, filters,setSearchQuery,setFilters, setSortBy,clearAllFilters } = useCampaignFilter();
 
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
 // WebSocket for real-time notifications
   const { notifications: realtimeNotifications } = useWebSocket(authUser?.id);
@@ -195,7 +196,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     name: authUser?.name || "John Doe",
     role: "influencer",
     email: authUser?.email || "john@example.com",
-    avatar: null
+    imageData: authUser?.imageData || null
   };
 
   const handleSearch = useCallback((e:any) => {
@@ -241,14 +242,19 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
       <header className="header">
         <div className="header-container">
           {/* Logo and Brand */}
-          <div className="header-brand" onClick={()=>handleOnClick(location.pathname)}>
-            <Link to="/" className="logo">
-              <div className="logo-icon">
-                <Zap size={24} />
-              </div>
-              <span className="brand-name">InfluenceX</span>
-            </Link>
-          </div>
+         <div
+          className="header-brand clickable"
+          onClick={() => handleOnClick(location.pathname)}
+          role="button"
+          tabIndex={0}
+        >
+         <div className="logo-wrapper">
+            <div className="logo-icon">
+              <Zap size={24} />
+            </div>
+            <span className="brand-name">InfluenceX</span>
+           </div>
+        </div>
 
           {/* Public Navigation */}
           <nav className="header-nav">
@@ -446,8 +452,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="user-avatar">
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} />
+                {user.imageData ? (
+                   <img 
+                        src={`data:image/*;base64,${user.imageData}`} 
+                        alt="User Avatar"
+                      />
                 ) : (
                   <User size={20} />
                 )}
@@ -462,8 +471,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               <div className="user-dropdown">
                 <div className="user-dropdown-header">
                   <div className="user-avatar large">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} />
+                    {user.imageData ? (
+                       <img 
+                        src={`data:image/*;base64,${user.imageData}`} 
+                        alt="User Avatar"
+                      />
                     ) : (
                       <User size={24} />
                     )}

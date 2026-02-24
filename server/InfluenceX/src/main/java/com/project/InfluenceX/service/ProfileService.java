@@ -1,6 +1,7 @@
 package com.project.InfluenceX.service;
 
 import com.project.InfluenceX.model.PhoneVerification;
+import com.project.InfluenceX.model.Posts;
 import com.project.InfluenceX.model.RequestDTO.ProfileRequestDTO;
 import com.project.InfluenceX.model.ResponseDTO.ProfileResponseDTO;
 import com.project.InfluenceX.model.User;
@@ -16,7 +17,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class ProfileService {
@@ -187,20 +190,29 @@ public class ProfileService {
         //response.setStats(buildStats(user));
 
         // Map posts
-//        if (user.getPostsCreated() != null) {
-//            List<PostSummaryDTO> posts = user.getPostsCreated().stream()
-//                    .limit(10) // Limit to recent 10 posts
-//                    .map(this::mapToPostSummary)
-//                    .collect(Collectors.toList());
-//            response.setCreatedPosts(posts);
-//        } else {
-//            response.setCreatedPosts(new ArrayList<>());
-//        }
+        if (user.getPostsCreated() != null) {
+            List<ProfileResponseDTO.PostSummaryDTO> posts = user.getPostsCreated().stream()
+                    .limit(10) // Limit to recent 10 posts
+                    .map(this::mapToPostSummary)
+                    .collect(Collectors.toList());
+            response.setCreatedPosts(posts);
+        } else {
+            response.setCreatedPosts(new ArrayList<>());
+        }
 
         // Map collaborations (TODO: implement when collaboration entity is ready)
         response.setCollaborations(new ArrayList<>());
 
         return response;
+    }
+
+    private ProfileResponseDTO.PostSummaryDTO mapToPostSummary(Posts posts) {
+        ProfileResponseDTO.PostSummaryDTO postSummaryDTO = new ProfileResponseDTO.PostSummaryDTO();
+        postSummaryDTO.setId(posts.getId());
+        postSummaryDTO.setTitle(posts.getTitle());
+        postSummaryDTO.setDescription(posts.getDescription());
+        postSummaryDTO.setStatus(posts.getPostStatus().toString());
+        return postSummaryDTO;
     }
 
     /**

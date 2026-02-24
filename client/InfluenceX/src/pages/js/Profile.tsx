@@ -811,7 +811,7 @@ const Profile = () => {
                       <div key={index} className="profile-post-card">
                         <div className="profile-post-header">
                           <h4 className="profile-post-title">{post.title}</h4>
-                          <span className={`profile-post-status ${post.status.toLowerCase()}`}>
+                          <span className={`profile-post-status ${post.status?.toLowerCase()}`}>
                             {post.status}
                           </span>
                         </div>
@@ -820,7 +820,7 @@ const Profile = () => {
                           <span className="profile-post-date">{post.createdAt}</span>
                           <button 
                             className="profile-post-view"
-                            onClick={() => navigate(`/posts/${post.id}`)}
+                           onClick={() => navigate('/', { state: { openPostId: post?.id } })}
                           >
                             View Details
                           </button>

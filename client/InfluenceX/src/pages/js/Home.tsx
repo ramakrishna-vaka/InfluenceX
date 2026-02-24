@@ -1,6 +1,7 @@
 import React, { useState, useEffect ,useMemo} from 'react';
 import { Rocket, Users, DollarSign, Calendar, Filter, Image as ImageIcon, User, Clock, CheckCircle, Star,X, Share2, ExternalLink  } from 'lucide-react';
 import '../css/Home.css';
+import { Link, useLocation  } from "react-router-dom";
 import type { Post } from '../../utils/Posts';
 import { useAuth } from '../../AuthProvider';
 import { useCampaignFilter } from '../../CampaignFilterContext';
@@ -20,7 +21,22 @@ const Home: React.FC = () => {
 
   const categories = ['Technology', 'Fashion', 'Fitness', 'Food', 'Travel', 'Beauty', 'Gaming'];
 
-  const {searchQuery,filters,sortBy}= useCampaignFilter();
+  const { searchQuery, filters, sortBy } = useCampaignFilter();
+  
+  //This is for handling the case when user clicks on a campaign from profile page to view details, we want to open the details dialog for that campaign
+  const location = useLocation();
+
+  useEffect(() => {
+  if (location.state?.openPostId && posts.length > 0) {
+    const post = posts.find(p => p.id === location.state.openPostId);
+    if (post) {
+      setSelectedPost(post);
+      // Clear the state so re-renders don't re-open it
+      window.history.replaceState({}, document.title);
+    }
+  }
+  }, [location.state, posts]);
+  
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -332,11 +348,13 @@ const Home: React.FC = () => {
                         <div className="author-avatar">
                           <User size={14} />
                         </div>
-                        <span>{post.createdBy.name}</span>
+                        <Link to={`/profile/${post.createdBy.id}`}>
+                          <span>{post.createdBy.name}</span>
+                        </Link>
                       </div>
                       <div className="post-rating">
                         <Star size={14} fill="currentColor" />
-                        <span>4.8</span>
+                        <span>{post.createdBy?.rating || 0}</span>
                       </div>
                     </div>
 
@@ -386,7 +404,11 @@ const Home: React.FC = () => {
             <div className="dialog-body">
               {selectedPost.imageBase64 && (
                 <div className="dialog-image">
-                  <img src={selectedPost.imageBase64} alt={selectedPost.title} />
+                  <img 
+                        className="post-img"
+                        src={`data:image/*;base64,${selectedPost.imageBase64}`} 
+                        alt={selectedPost.title}
+                      />
                 </div>
               )}
 

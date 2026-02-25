@@ -12,7 +12,7 @@ export interface Post {
     email: string;
     id?: string;
   };
-  createdAt: string;
+  createdAt?: string;
   status: 'open' | 'in-progress' | 'completed';
   hasApplied?: boolean;
   isMyPost?: boolean;
@@ -20,6 +20,10 @@ export interface Post {
   isCreatedByMe?: boolean;
   platformsNeeded: string[];
   location: string;
+  deliverables: string;
+  compensationType: string;
+  compensationDescription: string;
+  updatedAt?: string;
 }
 
 export const handleCreateCampaign=()=>{

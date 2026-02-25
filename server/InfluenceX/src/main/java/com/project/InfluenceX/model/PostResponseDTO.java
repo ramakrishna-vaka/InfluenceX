@@ -25,6 +25,11 @@ public class PostResponseDTO {
     private String imageBase64;   // Base64 string for UI
 
     private boolean isCreatedByMe;
+    private String updatedAt;
+    private String createdAt;
+    private String compensationType;
+    private String compensationDescription;
+    private String deliverables;
 
     // --- Getters ---
     public long getId() { return id; }
@@ -43,6 +48,11 @@ public class PostResponseDTO {
     public String getPostStatus() { return postStatus; }
     public String getImageBase64() { return imageBase64; }
     public boolean getIsCreatedByMe() { return isCreatedByMe; }
+    public String getUpdatedAt(){ return updatedAt; }
+    public String getCompensationType(){ return compensationType; }
+    public String getCompensationDescription(){ return compensationDescription; }
+    public String getDeliverables(){ return deliverables; }
+    public String getCreatedAt(){ return createdAt; }
 
     // --- Setters ---
     public void setId(long id) { this.id = id; }
@@ -61,4 +71,9 @@ public class PostResponseDTO {
     public void setPostStatus(String postStatus) { this.postStatus = postStatus; }
     public void setImageBase64(String imageBase64) { this.imageBase64 = imageBase64; }
     public void setCreatedByMe(boolean isCreatedByMe){ this.isCreatedByMe=isCreatedByMe; }
+    public void setCompensationType(String compensationType){ this.compensationType=compensationType;}
+    public void setCompensationDescription(String compensationDescription) { this.compensationDescription=compensationDescription; }
+    public void setUpdatedAt(String updatedAt){ this.updatedAt=updatedAt; }
+    public void setDeliverables(String deliverables){ this.deliverables= deliverables; }
+    public void setCreatedAt(String createdAt){ this.createdAt=createdAt;}
 }

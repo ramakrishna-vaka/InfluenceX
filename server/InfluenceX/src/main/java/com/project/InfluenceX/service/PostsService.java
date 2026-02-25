@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.project.InfluenceX.Utils.ModelToDTOMapper.getPost;
+
 @Service
 public class PostsService {
     public PostsRepository postsRepository;
@@ -34,7 +36,7 @@ public class PostsService {
             createdBy.setEmail(user.getEmail());
             createdBy.setId(user.getId());
             dto.setCreatedBy(createdBy);
-            dto.setBudget(post.getBudget());
+            //dto.setBudget(post.getBudget());
             dto.setDeadline(post.getDeadline());
             dto.setLocation(post.getLocation());
             dto.setType(post.getType());
@@ -45,6 +47,11 @@ public class PostsService {
             dto.setOpenRoles(post.getOpenRoles());
             dto.setFollowers(post.getFollowers());
             dto.setPostStatus(post.getPostStatus().name());
+            dto.setDeliverables(post.getDeliverables());
+            if(post.getUpdatedAt()!=null) dto.setUpdatedAt(post.getUpdatedAt().toString());
+            if(post.getCreatedAt()!=null) dto.setCreatedAt(post.getCreatedAt().toString());
+            dto.setCompensationType(post.getCompensationType());
+            dto.setCompensationDescription(post.getCompensationDescription());
             dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
             if(loggedUser==null){
                 dto.setCreatedByMe(false);
@@ -86,50 +93,68 @@ public class PostsService {
 
     public ResponseEntity createPost(PostRequestDTO postsDTO)
     {
-        Posts post=new Posts();
-        post.setPostStatus(PostStatusEnum.Open);
         User user = userRepository.findById(postsDTO.getUserId())
                 .orElse(null);
         if(user==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+        Posts post=getPost(postsDTO);
+        assert post != null;
         post.setCreatedBy(user);
-        post.setTitle(postsDTO.getCampaignTitle());
-        post.setDescription(postsDTO.getCampaignDescription());
-        post.setBudget(postsDTO.getBudget());
-        post.setDeadline(postsDTO.getDeadline());
-        post.setLocation(postsDTO.getLocation());
-        post.setPlatformsNeeded(Arrays.asList(postsDTO.getPlatforms()));
-        post.setFollowers(postsDTO.getFollowers());
-        post.setType(postsDTO.getType());
-        post.setOpenRoles(1);
-        post.setApplicants(0);
-        try {
-            if (postsDTO.getImage() != null && !postsDTO.getImage().isEmpty()) {
-                byte[] imageBytes = postsDTO.getImage().getBytes();
-                System.out.println("Image bytes length: " + (imageBytes != null ? imageBytes.length : 0));
-                post.setImageData(imageBytes);
-            } else {
-                post.setImageData(null); // Explicitly set to null if no image
-            }
-        } catch (Exception e) {
-            e.printStackTrace(); // Add this for debugging
-            return ResponseEntity.status(500).body("Failed to read image: " + e.getMessage());
-        }
-
-        System.out.println("Saving post with imageData: " +
-                (post.getImageData() != null ? post.getImageData().length + " bytes" : "null"));
-
         Posts savedPost = postsRepository.save(post);
         return ResponseEntity.ok(savedPost);
     }
 
-    public List<Posts> getMyPosts(User user){
+    public List<PostResponseDTO> getMyPosts(User user){
         if(user==null){
             return null;
         }
         List<Posts> posts=postsRepository.findAll();
-        return posts.stream().filter(post->post.getCreatedBy()==user).toList();
+
+        return posts.stream().filter(post->post.getCreatedBy()==user).map(post -> {
+            PostResponseDTO dto = new PostResponseDTO();
+            dto.setId(post.getId());
+            UserDTO createdBy=new UserDTO();
+            createdBy.setName(user.getName());
+            createdBy.setEmail(user.getEmail());
+            createdBy.setId(user.getId());
+            dto.setCreatedBy(createdBy);
+            //dto.setBudget(post.getBudget());
+            dto.setDeadline(post.getDeadline());
+            dto.setLocation(post.getLocation());
+            dto.setType(post.getType());
+            dto.setTitle(post.getTitle());
+            dto.setTitle(post.getTitle());
+            dto.setDescription(post.getDescription());
+            dto.setApplicants(post.getApplications().size());
+            dto.setOpenRoles(post.getOpenRoles());
+            dto.setFollowers(post.getFollowers());
+            dto.setPostStatus(post.getPostStatus().name());
+            dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
+           dto.setCreatedByMe(true);
+
+            // Convert image to Base64
+            if (post.getImageData() != null) {
+                dto.setImageBase64(Base64.getEncoder().encodeToString(post.getImageData()));
+            }
+
+            // Convert applications
+            List<ApplicationDTO> apps = post.getApplications()
+                    .stream()
+                    .map(app -> {
+                        ApplicationDTO a = new ApplicationDTO();
+                        a.setPostId(app.getPost().getId());
+                        a.setInfluencerId(app.getInfluencer().getId());
+                        a.setPitchMessage(app.getPitchMessage());
+                        a.setAppliedAt(app.getAppliedAt());
+                        return a;
+                    })
+                    .toList();
+
+            dto.setApplications(apps);
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public static void setApplications(Posts post,Application application){
@@ -146,7 +171,7 @@ public class PostsService {
         // Normal fields update
         post.setTitle(postsDTO.getCampaignTitle());
         post.setDescription(postsDTO.getCampaignDescription());
-        post.setBudget(postsDTO.getBudget());
+        //post.setBudget(postsDTO.getBudget());
         post.setDeadline(postsDTO.getDeadline());
         post.setLocation(postsDTO.getLocation());
         post.setPlatformsNeeded(new ArrayList<>(Arrays.asList(postsDTO.getPlatforms())));

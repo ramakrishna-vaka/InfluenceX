@@ -81,7 +81,7 @@ public class PostsController {
             createdBy.setName(user.getName());
             createdBy.setEmail(user.getEmail());
             dto.setCreatedBy(createdBy);
-            dto.setBudget(post.getBudget());
+            //dto.setBudget(post.getBudget());
             dto.setDeadline(post.getDeadline());
             dto.setLocation(post.getLocation());
             dto.setType(post.getType());
@@ -173,7 +173,7 @@ public class PostsController {
 
 
         // 4️⃣ Fetch user’s posts
-        List<Posts> posts = postsService.getMyPosts(user);
+        List<PostResponseDTO> posts = postsService.getMyPosts(user);
         return ResponseEntity.ok(posts);
     }
 

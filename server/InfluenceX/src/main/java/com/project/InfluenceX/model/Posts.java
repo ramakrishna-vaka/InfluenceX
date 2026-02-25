@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,9 +40,6 @@ public class Posts {
     @Column(name = "applicants")
     private int applicants = 0;
 
-    @Column(name = "budget")
-    private int budget;
-
     @Column(name = "deadline")
     private String deadline;
 
@@ -60,7 +59,7 @@ public class Posts {
     private List<Application> applications = new ArrayList<>();
 
     @Column(name = "created_at")
-    private final java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     // Remove @Lob and change the mapping to use @Basic with length
     @Basic(fetch = FetchType.LAZY)
@@ -69,6 +68,21 @@ public class Posts {
 
     @Column(name="followers")
     private String followers;
+
+    @Column
+    private LocalDateTime updatedAt;
+
+    @Column
+    private String deliverables;
+
+    @Column
+    private String compensationType;
+
+    @Column
+    private String compensationDescription;
+
+    @Column
+    private String applicationDeadline;
 
     public Posts() {}
 
@@ -87,8 +101,6 @@ public class Posts {
 
     public int getApplicants() { return applicants; }
 
-    public int getBudget() { return budget; }
-
     public String getDeadline() { return deadline; }
 
     public String getLocation() { return location; }
@@ -106,6 +118,18 @@ public class Posts {
     public String getFollowers(){
         return followers;
     }
+
+    public LocalDateTime getCreatedAt(){ return createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public String getDeliverables() { return deliverables; }
+
+    public String getCompensationType() { return compensationType; }
+
+    public String getCompensationDescription() { return compensationDescription; }
+
+    public String getApplicationDeadline() { return applicationDeadline; }
 
 
     // ---------- SETTERS ----------
@@ -141,10 +165,6 @@ public class Posts {
         this.platformsNeeded = platforms;
     }
 
-    public void setBudget(int budget) {
-        this.budget = budget;
-    }
-
     public void setLocation(String location) {
         this.location = location;
     }
@@ -167,4 +187,27 @@ public class Posts {
         this.followers=followers;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt){
+        this.createdAt=createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt){
+        this.updatedAt=updatedAt;
+    }
+
+    public void setDeliverables(String deliverables){
+        this.deliverables=deliverables;
+    }
+
+    public void setCompensationType(String compensationType){
+        this.compensationType=compensationType;
+    }
+
+    public void setCompensationDescription(String compensationDescription){
+        this.compensationDescription=compensationDescription;
+    }
+
+    public void setApplicationDeadline(String applicationDeadline){
+        this.applicationDeadline=applicationDeadline;
+    }
 }

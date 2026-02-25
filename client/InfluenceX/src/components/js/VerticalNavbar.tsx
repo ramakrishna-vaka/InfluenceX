@@ -16,8 +16,8 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ isVisible, onHide,selec
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
-    {path:'/my-created-campaigns', icon: FileText, label: 'My Created Campaigns'},
-    { path: '/my-applied-posts', icon: FileText, label: 'My Applied Posts' },
+    {path:'/my-created-campaigns', icon: FileText, label: 'My Collaborations'},
+    { path: '/my-applied-posts', icon: FileText, label: 'My Promotions' },
     { path: '/messages', icon: MessageCircle, label: 'Messages' },
     { path: '/about', icon: Info, label: 'About' },
     { path: '/help', icon: HelpCircle, label: 'Help' },

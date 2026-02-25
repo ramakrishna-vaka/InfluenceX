@@ -1,5 +1,5 @@
 import React, { useState, useEffect ,useMemo} from 'react';
-import { Rocket, Users, DollarSign, Calendar, Filter, Image as ImageIcon, User, Clock, CheckCircle, Star,X, Share2, ExternalLink  } from 'lucide-react';
+import { Rocket, Users, DollarSign, Calendar, Filter, Image as ImageIcon, User, Clock, CheckCircle, Star,X, Share2, ExternalLink, Gift  } from 'lucide-react';
 import '../css/Home.css';
 import { Link, useLocation  } from "react-router-dom";
 import type { Post } from '../../utils/Posts';
@@ -23,7 +23,6 @@ const Home: React.FC = () => {
 
   const { searchQuery, filters, sortBy } = useCampaignFilter();
   
-  //This is for handling the case when user clicks on a campaign from profile page to view details, we want to open the details dialog for that campaign
   const location = useLocation();
 
   useEffect(() => {
@@ -31,7 +30,6 @@ const Home: React.FC = () => {
     const post = posts.find(p => p.id === location.state.openPostId);
     if (post) {
       setSelectedPost(post);
-      // Clear the state so re-renders don't re-open it
       window.history.replaceState({}, document.title);
     }
   }
@@ -60,13 +58,9 @@ const Home: React.FC = () => {
     fetchPosts();
   }, []);
 
-  // Memoized filtered and sorted posts using context values
-  //without useMemo whatever changes, the entire filtering and sorting logic runs again causing performance issues
-  //with useMemo, it only recalculates when dependencies change
   const filteredPosts = useMemo(() => {
     let result = [...posts];
 
-    // Apply search query from context
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(post =>
@@ -76,22 +70,18 @@ const Home: React.FC = () => {
       );
     }
 
-    // Apply category filter from context (if category is set)
     if (filters.category !== 'all') {
       result = result.filter(post => post.type.toLowerCase() === filters.category.toLowerCase());
     }
 
-    // Apply local category filter (from dropdown)
     if (filterCategory !== 'all') {
       result = result.filter(post => post.type === filterCategory);
     }
 
-    // Apply status filter from context
     if (filters.status !== 'all') {
       result = result.filter(post => post.status === filters.status);
     }
 
-    // Apply budget filter from context
     if (filters.budget !== 'all') {
       const [min, max] = filters.budget.split('-').map(v => v.replace('+', ''));
       const minBudget = parseInt(min) || 0;
@@ -99,13 +89,10 @@ const Home: React.FC = () => {
       result = result.filter(post => post.budget >= minBudget && post.budget <= maxBudget);
     }
 
-    // Apply "My Posts" filter
     if (showMyPosts) {
       result = result.filter(post => post.isMyPost);
     }
 
-    // Apply sorting from context
-    //const sortKey = sortBy !== 'recent' ? sortBy : localSortBy;
     const sortKey = sortBy;
     result.sort((a, b) => {
       switch (sortKey) {
@@ -130,28 +117,66 @@ const Home: React.FC = () => {
     });
 
     return result;
-  }, [posts, searchQuery, sortBy, filterCategory, showMyPosts]); //dependencies
+  }, [posts, searchQuery, sortBy, filterCategory, showMyPosts]);
 
   const formatINRShortWithSymbol = (value: number) => {
-  const formatted = formatINRShort(value);
-  return `₹${formatted}`;
+    const formatted = formatINRShort(value);
+    return `₹${formatted}`;
   };
   
   const formatINRShort = (value: number) => {
-  if (value >= 10000000) {
-    return (value / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
-  } 
-  if (value >= 100000) {
-    return (value / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
-  }
-  if (value >= 1000) {
-    return (value / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
-  }
-  return value.toString();
-};
+    if (value >= 10000000) {
+      return (value / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
+    } 
+    if (value >= 100000) {
+      return (value / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
+    }
+    if (value >= 1000) {
+      return (value / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
+    }
+    return value.toString();
+  };
 
+  const getDaysUntilDeadline = (deadline: string): number => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const deadlineDate = new Date(deadline);
+    deadlineDate.setHours(0, 0, 0, 0);
+    return Math.round((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  };
 
+  const renderDeadline = (deadline: string, inline = false) => {
+    const days = getDaysUntilDeadline(deadline);
+    const dateStr = new Date(deadline).toLocaleDateString();
+    const isUrgent = days >= 0 && days <= 3;
+    const isPast = days < 0;
 
+    const urgencyLabel = isPast
+      ? 'Expired'
+      : days === 0
+      ? 'Today!'
+      : `${days}d left`;
+
+    if (inline) {
+      return (
+        <>
+          <span>{dateStr}</span>
+          <span className={`deadline-badge ${isUrgent || isPast ? 'deadline-urgent' : 'deadline-normal'}`}>
+            {urgencyLabel}
+          </span>
+        </>
+      );
+    }
+
+    return (
+      <span className={isUrgent || isPast ? 'deadline-text-urgent' : ''}>
+        {dateStr}
+        <span className={`deadline-badge ${isUrgent || isPast ? 'deadline-urgent' : 'deadline-normal'}`} style={{ marginLeft: 8 }}>
+          {urgencyLabel}
+        </span>
+      </span>
+    );
+  };
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -174,12 +199,8 @@ const Home: React.FC = () => {
 
   const handleApplyClick = (post: Post) => {
     if (post.isCreatedByMe) {
-      // Navigate to manage campaign page
       setSelectedPostForEdit(post);
-
-    }
-    else {
-      // Navigate to apply page
+    } else {
       window.location.href = `/apply/${post.id}`;
     }
   };
@@ -222,67 +243,8 @@ const Home: React.FC = () => {
           <p className="hero-subtitle">
             Discover exclusive collaboration opportunities with top-tier brands and creators
           </p>
-            {/* <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-number">10K+</span>
-              <span className="stat-label">Active Campaigns</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">50K+</span>
-              <span className="stat-label">Creators</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">$2M+</span>
-              <span className="stat-label">Paid Out</span>
-            </div> 
-          </div>  */}
         </div>
       </div>
-
-      {/* Sticky Controls */}
-      {/* <div className="controls-container">
-        <div className="controls-section">
-          <div className="controls-left">
-            <div className="filter-group">
-              <Filter size={20} />
-              <select 
-                value={filterCategory} 
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Categories</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="filter-select"
-              >
-                <option value="newest">Newest First</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="followers">Min Followers</option>
-              </select>
-            </div>
-
-            <button 
-              className={`toggle-btn ${showMyPosts ? 'active' : ''}`}
-              onClick={() => setShowMyPosts(!showMyPosts)}
-            >
-              My Posts
-            </button>
-          </div>
-
-          <div className="results-count">
-            {filteredPosts.length} campaigns found
-          </div>
-        </div>
-      </div> */}
 
       {/* Posts Grid */}
       <div className="content-section">
@@ -330,16 +292,24 @@ const Home: React.FC = () => {
                     <p className="post-description">{post.description}</p>
                     
                     <div className="post-metrics">
-                      <div className="metric price-metric">
-                        <span className="metric-value">{formatINRShortWithSymbol(post.budget)}</span>
-                      </div>
+                      {post.compensationType === 'money' ? (
+                        <div className="metric price-metric">
+                          <DollarSign className="metric-icon" size={16} />
+                          <span className="metric-value">{formatINRShortWithSymbol(post.budget)}</span>
+                        </div>
+                      ) : (
+                        <div className="metric barter-metric">
+                          <Gift className="metric-icon" size={16} />
+                          <span className="metric-value">{post.compensationType || 'Barter'}</span>
+                        </div>
+                      )}
                       <div className="metric">
                         <Users className="metric-icon" size={16} />
                         <span>{formatFollowers(post.followers)}+ followers</span>
                       </div>
                       <div className="metric">
                         <Calendar className="metric-icon" size={16} />
-                        <span>{new Date(post.deadline).toLocaleDateString()}</span>
+                        {renderDeadline(post.deadline, true)}
                       </div>
                     </div>
                     
@@ -359,10 +329,8 @@ const Home: React.FC = () => {
                     </div>
 
                     <div className="post-actions">
-                      <button className="btn-primary" onClick={() => {
-                        handleApplyClick(post);
-                      }}>
-                        {post.isCreatedByMe ? 'Edit' : 'Apply Now'}
+                      <button className="btn-primary" onClick={() => handleApplyClick(post)}>
+                        {post.isCreatedByMe ? 'Edit Campaign' : 'Apply Now'}
                       </button>
                       <button className="btn-secondary" onClick={() => setSelectedPost(post)}>
                         View Details
@@ -381,65 +349,74 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
+
       <CreateCampaignDialog
         isOpen={!!selectedPostForEdit}
         onClose={() => setSelectedPostForEdit(null)}
         post={selectedPostForEdit}
         mode="edit"
       />
-       {/* Details Dialog */}
+
+      {/* Details Dialog */}
       {selectedPost && (
         <div className="dialog-overlay" onClick={() => setSelectedPost(null)}>
           <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
             <div className="dialog-header">
-              <h2>{selectedPost.title}</h2>
-              <button 
-                className="dialog-close"
-                onClick={() => setSelectedPost(null)}
-              >
-                <X size={24} />
+              <div className="dialog-header-left">
+                <span className={`dialog-status-badge ${getStatusConfig(selectedPost.status).className}`}>
+                  {getStatusConfig(selectedPost.status).text}
+                </span>
+                <h2>{selectedPost.title}</h2>
+                <span className="dialog-category-tag">{selectedPost.type}</span>
+              </div>
+              <button className="dialog-close" onClick={() => setSelectedPost(null)}>
+                <X size={20} />
               </button>
             </div>
 
+            {/* Body */}
             <div className="dialog-body">
               {selectedPost.imageBase64 && (
                 <div className="dialog-image">
                   <img 
-                        className="post-img"
-                        src={`data:image/*;base64,${selectedPost.imageBase64}`} 
-                        alt={selectedPost.title}
-                      />
+                    className="post-img"
+                    src={`data:image/*;base64,${selectedPost.imageBase64}`} 
+                    alt={selectedPost.title}
+                  />
                 </div>
               )}
 
               <div className="dialog-info-grid">
                 <div className="info-item">
-                  <span className="info-label">Category</span>
-                  <span className="info-value">{selectedPost.type}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Status</span>
-                  <span className={`info-value ${getStatusConfig(selectedPost.status).className}`}>
-                    {getStatusConfig(selectedPost.status).text}
-                  </span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Budget</span>
-                  <span className="info-value">{formatINRShortWithSymbol(selectedPost.budget)}</span>
-                </div>
-                <div className="info-item">
                   <span className="info-label">Min Followers</span>
-                  <span className="info-value">{formatFollowers(selectedPost.followers)}+</span>
+                  <span className="info-value">
+                    <Users size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                    {formatFollowers(selectedPost.followers)}+
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Deadline</span>
                   <span className="info-value">
-                    {new Date(selectedPost.deadline).toLocaleDateString()}
+                    {renderDeadline(selectedPost.deadline)}
+                  </span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Compensation</span>
+                  <span className="info-value">
+                    {selectedPost.compensationType === 'money'
+                      ? formatINRShortWithSymbol(selectedPost.budget)
+                      : selectedPost.compensationType || 'Barter'}
                   </span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Posted By</span>
-                  <span className="info-value">{selectedPost.createdBy.name}</span>
+                  <span className="info-value">
+                    <Link to={`/profile/${selectedPost.createdBy.id}`} className="dialog-author-link">
+                      {selectedPost.createdBy.name}
+                    </Link>
+                  </span>
                 </div>
               </div>
 
@@ -448,14 +425,39 @@ const Home: React.FC = () => {
                 <p>{selectedPost.description}</p>
               </div>
 
-              {/* Add more sections as needed: Requirements, Deliverables, etc. */}
+              <div className="dialog-section">
+                <h3>Deliverables</h3>
+                <p>{selectedPost.deliverables}</p>
+              </div>
+
+              <div className="dialog-section">
+                <h3>{selectedPost.compensationType === 'money' ? 'Compensation' : 'What You Get'}</h3>
+                <p>{selectedPost.compensationDescription}</p>
+              </div>
+
+              <div className="dialog-section">
+                <h3>Application Period</h3>
+                <p>{new Date(selectedPost.createdAt).toLocaleDateString()} – {new Date(selectedPost.deadline).toLocaleDateString()}</p>
+              </div>
+
+              {/* Metadata row — styled, inside the scrollable body */}
+              <div className="dialog-meta-row">
+                <span className="dialog-meta-item">
+                  <Clock size={12} />
+                  Posted {new Date(selectedPost.createdAt).toLocaleString()}
+                </span>
+                {selectedPost.updatedAt && selectedPost.updatedAt !== selectedPost.createdAt && (
+                  <span className="dialog-meta-item">
+                    <CheckCircle size={12} />
+                    Updated {new Date(selectedPost.updatedAt).toLocaleString()}
+                  </span>
+                )}
+              </div>
             </div>
 
+            {/* Footer */}
             <div className="dialog-footer">
-              <button 
-                className="btn-secondary"
-                //onClick={() => handleShareCampaign(selectedPost.id)}
-              >
+              <button className="btn-secondary">
                 <Share2 size={16} />
                 Share Campaign
               </button>
@@ -471,7 +473,6 @@ const Home: React.FC = () => {
         </div>
       )}
     </div>
-    
   );
 };
 

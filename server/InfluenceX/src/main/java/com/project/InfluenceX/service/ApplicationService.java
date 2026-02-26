@@ -4,6 +4,7 @@ import com.project.InfluenceX.model.*;
 import com.project.InfluenceX.repository.ApplicationRepository;
 import com.project.InfluenceX.repository.PostsRepository;
 import com.project.InfluenceX.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -29,17 +30,20 @@ public class ApplicationService {
     }
 
     //TODO: don't use repository of posts/user here. keep fetching logic only in their respective service
-    public ResponseEntity<Application> createApplication(ApplicationDTO applicationDTO){
-        Application application=new Application();
+    public ResponseEntity<?> createApplication(ApplicationDTO applicationDTO){
         Long postId=applicationDTO.getPostId();
         Posts post = postsRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        application.setPost(post);
-        User createdBy=post.getCreatedBy();
-
         Long userId=applicationDTO.getInfluencerId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        if(applicationRepository.existsByPostIdAndInfluencerId(postId,userId)){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Application Already Exists");
+        }
+        Application application=new Application();
+        application.setPost(post);
+        User createdBy=post.getCreatedBy();
 
 
         notificationsService.createNotification(
@@ -47,7 +51,7 @@ public class ApplicationService {
                 user.getName() + " applied to your post titled \"" + post.getTitle() + "\""
         );
 
-        chatService.createChat(createdBy,user,new Message(user,createdBy,applicationDTO.getPitchMessage()));
+        chatService.createChat(createdBy,user,applicationDTO.getPitchMessage());
 
         application.setInfluencer(user);
         application.setAppliedAt(LocalDateTime.now());

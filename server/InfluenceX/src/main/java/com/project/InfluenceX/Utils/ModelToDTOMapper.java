@@ -1,9 +1,6 @@
 package com.project.InfluenceX.Utils;
 
-import com.project.InfluenceX.model.PostRequestDTO;
-import com.project.InfluenceX.model.PostResponseDTO;
-import com.project.InfluenceX.model.PostStatusEnum;
-import com.project.InfluenceX.model.Posts;
+import com.project.InfluenceX.model.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
@@ -52,5 +49,16 @@ public class ModelToDTOMapper {
         System.out.println("Saving post with imageData: " +
                 (post.getImageData() != null ? post.getImageData().length + " bytes" : "null"));
         return new Posts();
+    }
+
+
+    public static ApplicationDTO getApplicationDTO(Application application){
+        ApplicationDTO applicationDTO=new ApplicationDTO();
+        applicationDTO.setApplicationStatus(application.getStatus().toString());
+        applicationDTO.setPostId(application.getPost().getId());
+        applicationDTO.setInfluencerId(application.getInfluencer().getId());
+        applicationDTO.setPitchMessage(application.getPitchMessage());
+        applicationDTO.setAppliedAt(application.getAppliedAt());
+        return applicationDTO;
     }
 }

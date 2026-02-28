@@ -74,7 +74,7 @@ const Home: React.FC = () => {
       result = result.filter(p => p.type === filterCategory);
     if (filters.status !== 'all')
       result = result.filter(p => p.status === filters.status);
-    if (filters.budget !== 'all') {
+    if (filters.compensation !== 'all') {
       const [min, max] = filters.budget.split('-').map(v => v.replace('+', ''));
       const lo = parseInt(min) || 0, hi = max ? parseInt(max) : Infinity;
       result = result.filter(p => p.budget >= lo && p.budget <= hi);
@@ -87,7 +87,12 @@ const Home: React.FC = () => {
         case 'budget_low':  case 'price-low':  return a.budget - b.budget;
         case 'deadline':     return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         case 'alphabetical': return a.title.localeCompare(b.title);
-        case 'followers':    return b.followers - a.followers;
+        case 'followers': return b.followers - a.followers;
+        case 'application_deadline': {
+          const da = (a as any).applicationDeadline ? new Date((a as any).applicationDeadline).getTime() : Infinity;
+          const db = (b as any).applicationDeadline ? new Date((b as any).applicationDeadline).getTime() : Infinity;
+          return da - db;
+        }
         default: return 0;
       }
     });
@@ -144,7 +149,7 @@ const Home: React.FC = () => {
       <div className="platform-chips-compact">
         {show.map(p => (
           <span key={p} className="platform-chip-compact" title={p}>
-            {getPlatformConfig(p).emoji}
+            {getPlatformConfig(p).icon ? React.createElement(getPlatformConfig(p).icon, { size: 24 }) : '🔗'}
           </span>
         ))}
         {rest > 0 && <span className="platform-chip-compact platform-chip-more">+{rest}</span>}
@@ -231,12 +236,12 @@ const Home: React.FC = () => {
                       {post.compensationType === 'money' ? (
                         <div className="metric price-metric">
                           <DollarSign className="metric-icon" size={16} />
-                          <span className="metric-value">{fmt(post.budget)}</span>
+                          <span className="metric-value">{(fmt(Number(post.compensationDescription)))}</span>
                         </div>
                       ) : (
                         <div className="metric barter-metric">
                           <Gift className="metric-icon" size={16} />
-                          <span className="metric-value">{post.compensationType || 'Barter'}</span>
+                          <span className="metric-value">{post.compensationDescription || 'Other'}</span>
                         </div>
                       )}
                       <div className="metric">

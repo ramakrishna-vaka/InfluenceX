@@ -173,7 +173,7 @@ public class Posts {
         this.applicants = applicants;
     }
 
-    public void setApplications(Application application) {
+    public void addApplications(Application application) {
         List<Application> applications = getApplications();
         applications.add(application);
         this.applications = applications;

@@ -1,8 +1,11 @@
 package com.project.InfluenceX.model;
 
 public enum PostStatusEnum {
-    Open,
+    OPEN,
     Completed,
     Pending,
-    InProgress
+    InProgress,
+    Draft,
+    NO_LONGER_ACCEPTING_APPLICATIONS,
+    DELIVERABLES_PENDING
 }

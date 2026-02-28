@@ -121,15 +121,15 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
   isOpen, onClose, userId, post, mode,
 }) => {
   const [formData, setFormData]       = useState<FormData>(buildInitialForm(post));
-  const [image, setImage]             = useState<File | null>(null);
-  const [existingImage, setExistingImage] = useState(post?.imageBase64 ?? "");
+    const [image, setImage] = useState<File | null>(null);
+const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
   const [applications, setApplications]   = useState<any[]>([]);
   const [showLifecycle, setShowLifecycle] = useState(false);
 
   useEffect(() => {
     if (post) {
       setFormData(buildInitialForm(post));
-      setExistingImage(post.imageBase64 ?? "");
+      setExistingImage(post.imageBase64 || "");
       if (mode === "edit") {
         fetch(`http://localhost:8080/applications/${post.id}`, { credentials: "include" })
           .then(r => r.json())
@@ -176,8 +176,11 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isEditable("image")) return;
-    if (e.target.files?.[0]) setImage(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+    // if (!isEditable("image")) return;
+    // if (e.target.files?.[0]) setImage(e.target.files[0]);
   };
 
   const handleLifecycleSelect = (value: PostStatus) => {
@@ -400,18 +403,71 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
               onChange={handleInputChange} placeholder="e.g. Mumbai, Pan India, Hyderabad" />
           </div>
 
-          {/* Image */}
-          <div className="ccd-field">
-            <label className="ccd-label">Campaign Image</label>
-            {existingImage && (
-              <div className="ccd-existing-image">
-                <img src={`data:image/*;base64,${existingImage}`} alt="current" />
-                <span>Current image</span>
-              </div>
-            )}
-            <input className="ccd-file-input" type="file" name="image" accept="image/*"
-              onChange={handleImageChange} disabled={!isEditable("image")} />
-          </div>
+       {/* ── Campaign Image ── */}
+<div className="ccd-field">
+  <label className="ccd-label">Campaign Image</label>
+
+  {existingImage && !image ? (
+    /* Has existing image — show preview + change button */
+    <div className="ccd-image-preview-wrapper">
+      <img
+        className="ccd-image-preview"
+        src={`data:image/*;base64,${existingImage}`}
+        alt="Campaign"
+      />
+      <label className="ccd-image-change-btn" htmlFor="ccd-image-input">
+        <span>Change Image</span>
+      </label>
+      <input
+        id="ccd-image-input"
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        style={{ display: "none" }}
+      />
+    </div>
+  ) : image ? (
+    /* User just picked a new file — show its preview + change option */
+    <div className="ccd-image-preview-wrapper">
+      <img
+        className="ccd-image-preview"
+        src={URL.createObjectURL(image)}
+        alt="New upload"
+      />
+      <label className="ccd-image-change-btn" htmlFor="ccd-image-input">
+        <span>Change Image</span>
+      </label>
+      <input
+        id="ccd-image-input"
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        style={{ display: "none" }}
+      />
+    </div>
+  ) : (
+    /* No image at all — show dashed upload zone */
+    <label className="ccd-file-dropzone" htmlFor="ccd-image-input">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span className="ccd-dropzone-label">Click to upload image</span>
+      <span className="ccd-dropzone-sub">PNG, JPG, WEBP up to 10MB</span>
+      <input
+        id="ccd-image-input"
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        style={{ display: "none" }}
+      />
+    </label>
+  )}
+</div>
+
+           {/* <label>Upload Image</label>
+          <input type="file" name="image" accept="image/*" onChange={handleImageChange} /> */}
 
           {/* ── Post Lifecycle (edit only) ─────────────────────────────────── */}
           {mode === "edit" && (

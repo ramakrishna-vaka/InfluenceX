@@ -3,6 +3,7 @@ package com.project.InfluenceX.Utils;
 import com.project.InfluenceX.model.*;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -48,7 +49,10 @@ public class ModelToDTOMapper {
         post.setCreatedAt(java.time.LocalDateTime.now());
         post.setUpdatedAt(java.time.LocalDateTime.now());
         post.setDeliverables(postRequestDTO.getDeliverables());
-        post.setApplicationDeadline(postRequestDTO.getApplicationDeadline());
+        post.setApplicationDeadline(
+                LocalDate.parse(postRequestDTO.getApplicationDeadline())
+                        .atStartOfDay()
+        );
         post.setCompensationType(postRequestDTO.getCompensationType());
         post.setCompensationDescription(postRequestDTO.getCompensationDescription());
         post.setApplicants(post.getApplications().size());
@@ -94,6 +98,7 @@ public class ModelToDTOMapper {
         dto.setDeliverables(post.getDeliverables());
         if(post.getUpdatedAt()!=null) dto.setUpdatedAt(post.getUpdatedAt().toString());
         if(post.getCreatedAt()!=null) dto.setCreatedAt(post.getCreatedAt().toString());
+        if(post.getApplicationDeadline()!=null) dto.setApplicationDeadline(post.getApplicationDeadline().toString());
         dto.setCompensationType(post.getCompensationType());
         dto.setCompensationDescription(post.getCompensationDescription());
         dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));

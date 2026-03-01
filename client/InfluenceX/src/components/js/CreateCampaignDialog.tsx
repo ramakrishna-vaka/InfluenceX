@@ -1,22 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X, Users, FileText, Megaphone, Gift, Zap, TrendingUp, Globe,
   UtensilsCrossed, ShoppingBag, Dumbbell, Plane, Music, Sparkles,
   DollarSign, Package, CalendarClock, CalendarCheck, Lock,
-  ChevronDown, AlertTriangle,
+  ChevronDown, AlertTriangle, Info,
 } from "lucide-react";
 import type { CreateCampaignDialogProps } from "../../utils/Posts";
 import "./../css/CreateCampaignDialog.css";
 
 type CompensationType = "money" | "other";
-
-/**
- * Post lifecycle stages shown in the Edit dialog:
- *   open               → accepting new applications
- *   applications-ended → stop new applications, deliverables still running
- *   closed             → fully shut down (no new apps, no active deliverables)
- */
-type PostStatus = "draft" | "open" | "applications-ended" | "closed";
 
 interface FormData {
   name: string;
@@ -30,7 +22,7 @@ interface FormData {
   platforms: string[];
   location: string;
   followers: string;
-  postStatus: PostStatus;
+  postStatus: string;
 }
 
 const campaignTypes = [
@@ -59,46 +51,47 @@ const compensationTypes: {
   { value: "other", label: "Other / Custom", icon: Package,    placeholder: "Describe your compensation offer" },
 ];
 
-// Fields locked forever after creation
-//const CREATION_LOCKED: (keyof FormData | "image")[] = ["type", "platforms", "followers"];
-
-// Fields locked while any application is in-progress
 const IN_PROGRESS_LOCKED: (keyof FormData | "image")[] = [
   "deliverables", "compensationType", "compensationDescription", "deliverableDeadline",
 ];
 
-// ─── Lifecycle option definitions ─────────────────────────────────────────────
 interface LifecycleOption {
-  value: PostStatus;
+  value: string;
   label: string;
   description: string;
-  requiresNoInProgress: boolean; // true = only available when no application is in-progress
+  requiresNoInProgress: boolean;
   color: string;
+  bgColor: string;
 }
 
 const LIFECYCLE_OPTIONS: LifecycleOption[] = [
   {
-    value: "open",
+    value: "OPEN",
     label: "Open",
     description: "Accepting new applications.",
     requiresNoInProgress: false,
-    color: "#10b981",
+    color: "#059669",
+    bgColor: "#ecfdf5",
   },
   {
-    value: "applications-ended",
+    value: "NO_LONGER_ACCEPTING_APPLICATIONS",
     label: "Applications Closed",
     description: "Stop accepting new applications. Ongoing deliverables continue.",
     requiresNoInProgress: false,
-    color: "#8b5cf6",
+    color: "#7c3aed",
+    bgColor: "#f5f3ff",
   },
   {
-    value: "closed",
-    label: "Closed",
-    description: "Fully close this post. No new applications or active deliverables.",
+    value: "CLOSED",
+    label: "Fully Closed",
+    description: "No new applications or active deliverables allowed.",
     requiresNoInProgress: true,
-    color: "#ef4444",
+    color: "#dc2626",
+    bgColor: "#fef2f2",
   },
 ];
+
+const todayStr = () => new Date().toISOString().split("T")[0];
 
 const buildInitialForm = (post: CreateCampaignDialogProps["post"]): FormData => ({
   name:                    post?.title                         ?? "",
@@ -112,21 +105,25 @@ const buildInitialForm = (post: CreateCampaignDialogProps["post"]): FormData => 
   platforms:               post?.platformsNeeded               ?? [],
   location:                post?.location                      ?? "",
   followers:               post?.followers?.toString()         ?? "",
-  postStatus:              ((post as any)?.status as PostStatus) ?? "open",
+  postStatus:              post?.postStatus ?? "",
 });
 
 const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
   isOpen, onClose, userId, post, mode,
 }) => {
-  const [formData, setFormData]       = useState<FormData>(buildInitialForm(post));
-    const [image, setImage] = useState<File | null>(null);
-const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
+  const [formData, setFormData]           = useState<FormData>(buildInitialForm(post));
+  const [image, setImage]                 = useState<File | null>(null);
+  const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
   const [applications, setApplications]   = useState<any[]>([]);
   const [showLifecycle, setShowLifecycle] = useState(false);
+  const [prevStatus, setPrevStatus]       = useState(post?.postStatus ?? "OPEN");
+  const lifecycleRef                      = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (post) {
-      setFormData(buildInitialForm(post));
+      const initial = buildInitialForm(post);
+      setPrevStatus(initial.postStatus);
+      setFormData(initial);
       setExistingImage(post.imageBase64 || "");
       if (mode === "edit") {
         fetch(`http://localhost:8080/applications/${post.id}`, { credentials: "include" })
@@ -137,6 +134,17 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
     }
   }, [post]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (lifecycleRef.current && !lifecycleRef.current.contains(e.target as Node)) {
+        setShowLifecycle(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const hasInProgress = applications.some(a => a.status === "in-progress");
 
   const isEditable = (field: keyof FormData | "image"): boolean => {
@@ -144,6 +152,54 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
     if (hasInProgress && IN_PROGRESS_LOCKED.includes(field)) return false;
     return true;
   };
+
+  // ─── Validation ─────────────────────────────────────────────────────────────
+  const today = todayStr();
+
+  const validationErrors: string[] = [];
+
+  // Required fields
+  if (!formData.name) validationErrors.push("Post name is required.");
+  if (!formData.type) validationErrors.push("Post type is required.");
+
+  if (mode === "create") {
+    // applicationDeadline >= today
+    if (formData.applicationDeadline && formData.applicationDeadline < today) {
+      validationErrors.push("Application deadline must be today or a future date.");
+    }
+    // deliverableDeadline >= today
+    if (formData.deliverableDeadline && formData.deliverableDeadline < today) {
+      validationErrors.push("Deliverable deadline must be today or a future date.");
+    }
+    // applicationDeadline <= deliverableDeadline
+    if (
+      formData.applicationDeadline &&
+      formData.deliverableDeadline &&
+      formData.applicationDeadline > formData.deliverableDeadline
+    ) {
+      validationErrors.push("Application deadline must be before (or same as) the deliverable deadline.");
+    }
+  }
+
+  if (mode === "edit") {
+    // Switching from NO_LONGER_ACCEPTING_APPLICATIONS → OPEN requires valid applicationDeadline
+    const reopening =
+      prevStatus === "NO_LONGER_ACCEPTING_APPLICATIONS" &&
+      formData.postStatus === "OPEN";
+    if (reopening) {
+      if (!formData.applicationDeadline) {
+        validationErrors.push("Please set an application deadline (today or later) to re-open the post.");
+      } else if (formData.applicationDeadline < today) {
+        validationErrors.push("Application deadline must be today or a future date to re-open the post.");
+      }
+    }
+    // If status is OPEN, applicationDeadline must be >= today
+    else if (formData.postStatus === "OPEN" && formData.applicationDeadline && formData.applicationDeadline < today) {
+      validationErrors.push("Application deadline must be today or later when the post is Open.");
+    }
+  }
+
+  const canSubmit = validationErrors.length === 0;
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -176,22 +232,18 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
     }
-    // if (!isEditable("image")) return;
-    // if (e.target.files?.[0]) setImage(e.target.files[0]);
   };
 
-  const handleLifecycleSelect = (value: PostStatus) => {
+  const handleLifecycleSelect = (value: string) => {
     const opt = LIFECYCLE_OPTIONS.find(o => o.value === value)!;
-    if (opt.requiresNoInProgress && hasInProgress) return; // guard
+    if (opt.requiresNoInProgress && hasInProgress) return;
     setFormData(p => ({ ...p, postStatus: value }));
+    setShowLifecycle(false);
   };
 
   // ─── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!formData.name || !formData.type) {
-      alert("Please fill in required fields (Name and Type)");
-      return;
-    }
+    if (!canSubmit) return;
     const data = new FormData();
     data.append("userId",                  userId?.toString() ?? post?.createdBy?.id?.toString() ?? "");
     data.append("campaignTitle",           formData.name);
@@ -224,9 +276,13 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
 
   if (!isOpen) return null;
 
-  const selectedComp = compensationTypes.find(c => c.value === formData.compensationType)!;
-  const currentLifecycle = LIFECYCLE_OPTIONS.find(o => o.value === formData.postStatus)
-    ?? LIFECYCLE_OPTIONS[0];
+  const selectedComp    = compensationTypes.find(c => c.value === formData.compensationType)!;
+  const currentLifecycle = LIFECYCLE_OPTIONS.find(o => o.value === formData.postStatus) ?? LIFECYCLE_OPTIONS[0];
+
+  const reopeningWithoutDeadline =
+    mode === "edit" &&
+    prevStatus === "NO_LONGER_ACCEPTING_APPLICATIONS" &&
+    formData.postStatus === "OPEN";
 
   return (
     <div className="ccd-overlay">
@@ -341,7 +397,14 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
             <div className="ccd-date-row">
               <div className="ccd-date-group">
                 <span className="ccd-date-sublabel"><CalendarCheck size={14} /> Application Closes</span>
-                <input className="ccd-input" type="date" name="applicationDeadline"
+                <input
+                  className={`ccd-input ${
+                    (mode === "create" && formData.applicationDeadline && formData.applicationDeadline < today) ||
+                    (mode === "edit" && formData.postStatus === "OPEN" && formData.applicationDeadline && formData.applicationDeadline < today)
+                      ? "ccd-input-error" : ""
+                  }`}
+                  type="date" name="applicationDeadline"
+                  min={today}
                   value={formData.applicationDeadline} onChange={handleInputChange} />
               </div>
               <div className="ccd-date-group">
@@ -352,11 +415,24 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
                   )}
                 </span>
                 <input
-                  className={`ccd-input ${!isEditable("deliverableDeadline") ? "ccd-input-disabled" : ""}`}
+                  className={`ccd-input ${!isEditable("deliverableDeadline") ? "ccd-input-disabled" : ""} ${
+                    mode === "create" && formData.deliverableDeadline && formData.deliverableDeadline < today
+                      ? "ccd-input-error" : ""
+                  }`}
                   type="date" name="deliverableDeadline" value={formData.deliverableDeadline}
+                  min={today}
                   onChange={handleInputChange} disabled={!isEditable("deliverableDeadline")} />
               </div>
             </div>
+            {/* Cross-field date warning */}
+            {mode === "create" &&
+              formData.applicationDeadline &&
+              formData.deliverableDeadline &&
+              formData.applicationDeadline > formData.deliverableDeadline && (
+              <p className="ccd-field-error">
+                <AlertTriangle size={13} /> Application deadline must be before the deliverable deadline.
+              </p>
+            )}
           </div>
 
           {/* Min Followers */}
@@ -400,127 +476,137 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
               onChange={handleInputChange} placeholder="e.g. Mumbai, Pan India, Hyderabad" />
           </div>
 
-       {/* ── Campaign Image ── */}
-<div className="ccd-field">
-  <label className="ccd-label">Campaign Image</label>
-
-  {existingImage && !image ? (
-    /* Has existing image — show preview + change button */
-    <div className="ccd-image-preview-wrapper">
-      <img
-        className="ccd-image-preview"
-        src={`data:image/*;base64,${existingImage}`}
-        alt="Campaign"
-      />
-      <label className="ccd-image-change-btn" htmlFor="ccd-image-input">
-        <span>Change Image</span>
-      </label>
-      <input
-        id="ccd-image-input"
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        style={{ display: "none" }}
-      />
-    </div>
-  ) : image ? (
-    /* User just picked a new file — show its preview + change option */
-    <div className="ccd-image-preview-wrapper">
-      <img
-        className="ccd-image-preview"
-        src={URL.createObjectURL(image)}
-        alt="New upload"
-      />
-      <label className="ccd-image-change-btn" htmlFor="ccd-image-input">
-        <span>Change Image</span>
-      </label>
-      <input
-        id="ccd-image-input"
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        style={{ display: "none" }}
-      />
-    </div>
-  ) : (
-    /* No image at all — show dashed upload zone */
-    <label className="ccd-file-dropzone" htmlFor="ccd-image-input">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      <span className="ccd-dropzone-label">Click to upload image</span>
-      <span className="ccd-dropzone-sub">PNG, JPG, WEBP up to 10MB</span>
-      <input
-        id="ccd-image-input"
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        style={{ display: "none" }}
-      />
-    </label>
-  )}
-</div>
-
-           {/* <label>Upload Image</label>
-          <input type="file" name="image" accept="image/*" onChange={handleImageChange} /> */}
+          {/* Campaign Image */}
+          <div className="ccd-field">
+            <label className="ccd-label">Campaign Image</label>
+            {existingImage && !image ? (
+              <div className="ccd-image-preview-wrapper">
+                <img className="ccd-image-preview" src={`data:image/*;base64,${existingImage}`} alt="Campaign" />
+                <label className="ccd-image-change-btn" htmlFor="ccd-image-input"><span>Change Image</span></label>
+                <input id="ccd-image-input" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
+              </div>
+            ) : image ? (
+              <div className="ccd-image-preview-wrapper">
+                <img className="ccd-image-preview" src={URL.createObjectURL(image)} alt="New upload" />
+                <label className="ccd-image-change-btn" htmlFor="ccd-image-input"><span>Change Image</span></label>
+                <input id="ccd-image-input" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
+              </div>
+            ) : (
+              <label className="ccd-file-dropzone" htmlFor="ccd-image-input">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span className="ccd-dropzone-label">Click to upload image</span>
+                <span className="ccd-dropzone-sub">PNG, JPG, WEBP up to 10MB</span>
+                <input id="ccd-image-input" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
+              </label>
+            )}
+          </div>
 
           {/* ── Post Lifecycle (edit only) ─────────────────────────────────── */}
           {mode === "edit" && (
-            <div className="ccd-field">
+            <div className="ccd-field" ref={lifecycleRef}>
               <label className="ccd-label">Post Status</label>
 
-              {/* Current status pill + toggle */}
-              <button
-                type="button"
-                className="ccd-lifecycle-trigger"
-                onClick={() => setShowLifecycle(v => !v)}
-                style={{ borderColor: currentLifecycle.color }}
-              >
-                <span className="ccd-lifecycle-dot" style={{ background: currentLifecycle.color }} />
-                <span className="ccd-lifecycle-trigger-label">{currentLifecycle.label}</span>
-                <ChevronDown size={15} className={`ccd-lifecycle-chevron ${showLifecycle ? 'open' : ''}`} />
-              </button>
+              <div className="ccd-lifecycle-wrapper">
+                {/* Trigger button */}
+                <button
+                  type="button"
+                  className="ccd-lifecycle-trigger"
+                  style={{
+                    "--lc-color": currentLifecycle.color,
+                    "--lc-bg": currentLifecycle.bgColor,
+                  } as React.CSSProperties}
+                  onClick={() => setShowLifecycle(v => !v)}
+                >
+                  <span className="ccd-lifecycle-dot" style={{ background: currentLifecycle.color }} />
+                  <span className="ccd-lifecycle-trigger-label">{currentLifecycle.label}</span>
+                  <ChevronDown
+                    size={15}
+                    className={`ccd-lifecycle-chevron ${showLifecycle ? "open" : ""}`}
+                  />
+                </button>
 
-              {showLifecycle && (
-                <div className="ccd-lifecycle-panel">
-                  {LIFECYCLE_OPTIONS.map(opt => {
-                    const locked = opt.requiresNoInProgress && hasInProgress;
-                    const active = formData.postStatus === opt.value;
-                    return (
-                      <div
-                        key={opt.value}
-                        className={`ccd-lifecycle-option
-                          ${active ? 'ccd-lifecycle-active' : ''}
-                          ${locked ? 'ccd-lifecycle-locked' : ''}`}
-                        onClick={() => !locked && handleLifecycleSelect(opt.value)}
-                      >
-                        <span className="ccd-lifecycle-dot" style={{ background: opt.color }} />
-                        <div className="ccd-lifecycle-text">
-                          <span className="ccd-lifecycle-name">{opt.label}</span>
-                          <span className="ccd-lifecycle-desc">{opt.description}</span>
-                          {locked && (
-                            <span className="ccd-lifecycle-lock-note">
-                              <Lock size={11} /> Available only when no application is in-progress
-                            </span>
-                          )}
+                {/* Dropdown panel */}
+                {showLifecycle && (
+                  <div className="ccd-lifecycle-panel">
+                    {LIFECYCLE_OPTIONS.map(opt => {
+                      const locked = opt.requiresNoInProgress && hasInProgress;
+                      const active = formData.postStatus === opt.value;
+                      return (
+                        <div
+                          key={opt.value}
+                          className={`ccd-lifecycle-option ${active ? "ccd-lifecycle-active" : ""} ${locked ? "ccd-lifecycle-locked" : ""}`}
+                          style={{
+                            "--lc-color": opt.color,
+                            "--lc-bg": opt.bgColor,
+                          } as React.CSSProperties}
+                          onClick={() => !locked && handleLifecycleSelect(opt.value)}
+                        >
+                          <span className="ccd-lifecycle-dot" style={{ background: opt.color }} />
+                          <div className="ccd-lifecycle-text">
+                            <span className="ccd-lifecycle-name">{opt.label}</span>
+                            <span className="ccd-lifecycle-desc">{opt.description}</span>
+                            {locked && (
+                              <span className="ccd-lifecycle-lock-note">
+                                <Lock size={11} /> Only available when no application is in-progress
+                              </span>
+                            )}
+                          </div>
+                          {active && <span className="ccd-lifecycle-check">✓</span>}
                         </div>
-                        {active && <span className="ccd-lifecycle-check">✓</span>}
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Hint when re-opening */}
+              {reopeningWithoutDeadline && (
+                <p className="ccd-field-hint">
+                  <Info size={13} />
+                  You're re-opening this post. Please set an application deadline (today or later) above.
+                </p>
               )}
             </div>
           )}
+
+          {/* ── Disclaimer ── */}
+          <div className="ccd-disclaimer">
+            <Info size={14} />
+            <span>
+              Please fill all <strong>required fields</strong> (Post Name &amp; Post Type) to{" "}
+              {mode === "edit" ? "save changes" : "create a post"}.
+              {mode === "create" && " Deadlines must be today or later, and the application deadline must not exceed the deliverable deadline."}
+              {mode === "edit" && formData.postStatus === "OPEN" && " While the post is Open, the application deadline must be today or later."}
+            </span>
+          </div>
+
+          {/* Validation error list */}
+          {validationErrors.length > 0 && (
+            <div className="ccd-validation-errors">
+              {validationErrors.map((err, i) => (
+                <div key={i} className="ccd-validation-error-item">
+                  <AlertTriangle size={13} />
+                  <span>{err}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
 
         {/* ── Footer ── */}
         <div className="ccd-footer">
           <button className="ccd-btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="ccd-btn-submit" onClick={handleSubmit}
-            disabled={!formData.name || !formData.type}>
+          <button
+            className="ccd-btn-submit"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            title={!canSubmit ? "Please fix the errors above to continue." : undefined}
+          >
             {mode === "edit" ? "Save Changes" : "Create Post"}
           </button>
         </div>

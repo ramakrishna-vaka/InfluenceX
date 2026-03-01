@@ -26,7 +26,7 @@ public class Posts {
     @Column(name = "description")
     private String description;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(name = "post_status")
     private PostStatusEnum postStatus;
 
@@ -82,7 +82,7 @@ public class Posts {
     private String compensationDescription;
 
     @Column
-    private String applicationDeadline;
+    private LocalDateTime applicationDeadline;
 
     public Posts() {}
 
@@ -129,7 +129,7 @@ public class Posts {
 
     public String getCompensationDescription() { return compensationDescription; }
 
-    public String getApplicationDeadline() { return applicationDeadline; }
+    public LocalDateTime getApplicationDeadline() { return applicationDeadline; }
 
 
     // ---------- SETTERS ----------
@@ -207,7 +207,7 @@ public class Posts {
         this.compensationDescription=compensationDescription;
     }
 
-    public void setApplicationDeadline(String applicationDeadline){
+    public void setApplicationDeadline(LocalDateTime applicationDeadline){
         this.applicationDeadline=applicationDeadline;
     }
 }

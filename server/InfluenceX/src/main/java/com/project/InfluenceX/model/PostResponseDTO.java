@@ -30,6 +30,7 @@ public class PostResponseDTO {
     private String compensationType;
     private String compensationDescription;
     private String deliverables;
+    private String applicationDeadline;
 
     // --- Getters ---
     public long getId() { return id; }
@@ -53,6 +54,7 @@ public class PostResponseDTO {
     public String getCompensationDescription(){ return compensationDescription; }
     public String getDeliverables(){ return deliverables; }
     public String getCreatedAt(){ return createdAt; }
+    public String getApplicationDeadline(){ return applicationDeadline; }
 
     // --- Setters ---
     public void setId(long id) { this.id = id; }
@@ -76,4 +78,5 @@ public class PostResponseDTO {
     public void setUpdatedAt(String updatedAt){ this.updatedAt=updatedAt; }
     public void setDeliverables(String deliverables){ this.deliverables= deliverables; }
     public void setCreatedAt(String createdAt){ this.createdAt=createdAt;}
+    public void setApplicationDeadline(String applicationDeadline){ this.applicationDeadline=applicationDeadline; }
 }

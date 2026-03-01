@@ -360,6 +360,18 @@ body {
   box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
 }
 
+.status-filled {
+  background: var(--warning-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(96, 22, 1, 0.3);
+}
+
 .status-completed {
   background: var(--text-secondary);
   color: white;
@@ -979,3 +991,10 @@ body {
 .main-content::-webkit-scrollbar-track { background: #f1f5f9; }
 .main-content::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
 .main-content::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
+
+.post-category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}

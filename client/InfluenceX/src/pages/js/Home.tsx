@@ -14,8 +14,8 @@ import { getPlatformConfig } from '../../utils/PlatformIcons';
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'draft':              return { className: 'status-draft',     text: 'Draft' };
-    case 'open':               return { className: 'status-open',      text: 'Open' };
-    case 'applications-ended':
+    case 'OPEN':               return { className: 'status-open',      text: 'Open' };
+    case 'NO_LONGER_ACCEPTING_APPLICATIONS': return { className: 'status-filled',    text: 'No Longer Accepting Applications' };
     case 'booked':
     case 'filled':             return { className: 'status-filled',    text: 'Applications Closed' };
     case 'in-progress':        return { className: 'status-progress',  text: 'In Progress' };
@@ -68,27 +68,29 @@ const Home: React.FC = () => {
         p.type?.toLowerCase().includes(q)
       );
     }
-    if (filters.category !== 'all')
-      result = result.filter(p => p.type.toLowerCase() === filters.category.toLowerCase());
+    if (!filters.category.includes('all')) {
+      result = result.filter(p => filters.category.includes(p.type?.toLowerCase() || ''));
+    }
     if (filterCategory !== 'all')
       result = result.filter(p => p.type === filterCategory);
-    if (filters.status !== 'all')
-      result = result.filter(p => p.status === filters.status);
-    if (filters.compensation !== 'all') {
-      const [min, max] = filters.budget.split('-').map(v => v.replace('+', ''));
-      const lo = parseInt(min) || 0, hi = max ? parseInt(max) : Infinity;
-      result = result.filter(p => p.budget >= lo && p.budget <= hi);
+    if (!filters.status.includes('all')) {
+      result = result.filter(p => filters.status.includes(p.postStatus.toLowerCase()));
+    }
+    if (filters.compensationType) {
+      result = result.filter(p => p.compensationType === filters.compensationType);
     }
     if (showMyPosts) result = result.filter(p => p.isMyPost);
     result.sort((a, b) => {
       switch (sortBy) {
         case 'recent': case 'newest':    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'budget_high': case 'price-high': return b.budget - a.budget;
-        case 'budget_low':  case 'price-low':  return a.budget - b.budget;
+        case 'budget_high': case 'price-high': return parseCompensation(b.compensationDescription) - parseCompensation(a.compensationDescription);
+        case 'budget_low':  case 'price-low':  return parseCompensation(a.compensationDescription) - parseCompensation(b.compensationDescription);
         case 'deadline':     return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
         case 'alphabetical': return a.title.localeCompare(b.title);
-        case 'followers': return b.followers - a.followers;
-        case 'application_deadline': {
+        case 'followers_most': return b.followers - a.followers;
+        case 'followers_least': return a.followers - b.followers;
+        case 'more_applications': return b.applications.length - a.applications.length;
+        case 'applications_deadline': {
           const da = (a as any).applicationDeadline ? new Date((a as any).applicationDeadline).getTime() : Infinity;
           const db = (b as any).applicationDeadline ? new Date((b as any).applicationDeadline).getTime() : Infinity;
           return da - db;
@@ -113,6 +115,14 @@ const Home: React.FC = () => {
     if (n >= 1000)    return `${(n / 1000).toFixed(1)}K`;
     return n?.toString();
   };
+
+  function parseCompensation(value: any): number {
+  if (!value) return 0;
+
+  if (typeof value === "number") return value;
+
+  return 0;
+} 
 
   const getDays = (d: string) => {
     const now = new Date(); now.setHours(0,0,0,0);
@@ -204,9 +214,10 @@ const Home: React.FC = () => {
         {filteredPosts.length > 0 ? (
           <div className="posts-grid">
             {filteredPosts.map(post => {
-              const sc = getStatusConfig(post.status);
-              const hasImg = post.imageBase64?.trim();
               const appClosed = isAppDeadlinePast(post);
+              const sc = getStatusConfig(post.postStatus);
+              const hasImg = post.imageBase64?.trim();
+              
 
               return (
                 <div key={post.id} className={`post-card ${hasImg ? 'has-image' : 'no-image'}`}>
@@ -250,7 +261,7 @@ const Home: React.FC = () => {
                       </div>
                       <div className="metric">
                         <Calendar className="metric-icon" size={16} />
-                        {renderDeadline(post.deadline, true)}
+                        {renderDeadline(post.applicationDeadline, true)}
                       </div>
                     </div>
 
@@ -302,8 +313,8 @@ const Home: React.FC = () => {
           <div className="dialog-content" onClick={e => e.stopPropagation()}>
             <div className="dialog-header">
               <div className="dialog-header-left">
-                <span className={`dialog-status-badge ${getStatusConfig(selectedPost.status).className}`}>
-                  {getStatusConfig(selectedPost.status).text}
+                <span className={`dialog-status-badge ${getStatusConfig(selectedPost.postStatus).className}`}>
+                  {getStatusConfig(selectedPost.postStatus).text}
                 </span>
                 <h2>{selectedPost.title}</h2>
                 <span className="dialog-category-tag">{selectedPost.type}</span>

@@ -13,7 +13,7 @@ export interface Post {
     id?: string;
   };
   createdAt?: string;
-  status: 'open' | 'in-progress' | 'completed';
+  postStatus: 'OPEN' | 'NO_LONGER_ACCEPTING_APPLICATIONS' | 'COMPLETED';
   hasApplied?: boolean;
   isMyPost?: boolean;
   applicationStatus?: 'pending' | 'accepted' | 'rejected';
@@ -24,6 +24,8 @@ export interface Post {
   compensationType: string;
   compensationDescription: string;
   updatedAt?: string;
+  applicationDeadline: string;
+  applications: number;
 }
 
 export const handleCreateCampaign=()=>{

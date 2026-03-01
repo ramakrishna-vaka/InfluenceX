@@ -23,7 +23,6 @@ interface FormData {
   type: string;
   description: string;
   deliverables: string;
-  budget: string;
   compensationType: CompensationType;
   compensationDescription: string;
   applicationDeadline: string;
@@ -61,7 +60,7 @@ const compensationTypes: {
 ];
 
 // Fields locked forever after creation
-const CREATION_LOCKED: (keyof FormData | "image")[] = ["type", "platforms", "followers"];
+//const CREATION_LOCKED: (keyof FormData | "image")[] = ["type", "platforms", "followers"];
 
 // Fields locked while any application is in-progress
 const IN_PROGRESS_LOCKED: (keyof FormData | "image")[] = [
@@ -106,7 +105,6 @@ const buildInitialForm = (post: CreateCampaignDialogProps["post"]): FormData => 
   type:                    post?.type                          ?? "",
   description:             post?.description                   ?? "",
   deliverables:            (post as any)?.deliverables         ?? "",
-  budget:                  post?.budget?.toString()            ?? "",
   compensationType:        (post as any)?.compensationType     ?? "money",
   compensationDescription: (post as any)?.compensationDescription ?? "",
   applicationDeadline:     (post as any)?.applicationDeadline  ?? "",
@@ -143,7 +141,6 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
 
   const isEditable = (field: keyof FormData | "image"): boolean => {
     if (mode !== "edit") return true;
-    if (CREATION_LOCKED.includes(field)) return false;
     if (hasInProgress && IN_PROGRESS_LOCKED.includes(field)) return false;
     return true;
   };
@@ -172,7 +169,7 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
 
   const handleCompensationTypeSelect = (ct: CompensationType) => {
     if (!isEditable("compensationType")) return;
-    setFormData(p => ({ ...p, compensationType: ct, budget: ct !== "money" ? "" : p.budget }));
+    setFormData(p => ({ ...p, compensationType: ct, compensationDescription: ct !== "money" ? "" : p.compensationDescription }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -321,8 +318,8 @@ const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
             {formData.compensationType === "money" && (
               <div className="ccd-comp-input-wrapper">
                 <span className="ccd-currency-prefix">₹</span>
-                <input className="ccd-input ccd-input-indent" type="number" name="budget"
-                  value={formData.budget} onChange={handleInputChange}
+                <input className="ccd-input ccd-input-indent" type="number" name="compensationDescription"
+                  value={formData.compensationDescription} onChange={handleInputChange}
                   placeholder="Enter amount (e.g. 5000)" />
               </div>
             )}

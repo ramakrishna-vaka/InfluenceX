@@ -26,13 +26,21 @@
   min-width: 0;
 }
 
-.logo {
+/* .logo {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
   min-width: 0;
+} */
+
+.logo-wrapper {
+  position: relative;   /* 🔑 THIS fixes the issue */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
 
 .logo-icon {
   width: 40px;
@@ -441,6 +449,31 @@
   justify-content: center;
   line-height: 1;
 }
+
+.notification-logo-count {
+  position: absolute;
+  top: -6px;
+  left: 18px;
+
+  background: var(--error-color);
+  color: white;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  pointer-events: none;
+}
+
 
 .notifications-dropdown {
   position: absolute;

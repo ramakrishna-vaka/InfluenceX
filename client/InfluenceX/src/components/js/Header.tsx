@@ -9,7 +9,8 @@ import {
   LogOut,
   Zap,
   Filter,
-  SortDesc
+  SortDesc,
+  Megaphone
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './../css/Header.css';
@@ -118,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     
     if (!showNotifications && unreadCount > 0) {
       try {
-        const response = await fetch('http://localhost:8080/post/notification/read', {
+        const response = await fetch('http://localhost:8080/post/notification', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -159,36 +160,54 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
 
   const sortOptions = [
     { value: 'recent', label: 'Most Recent' },
-    { value: 'budget_high', label: 'Highest Budget' },
-    { value: 'budget_low', label: 'Lowest Budget' },
+    { value: 'applications_deadline', label: 'Applications Deadline Soon' },
     { value: 'deadline', label: 'Deadline Soon' },
-    { value: 'alphabetical', label: 'A-Z' }
+    { value: 'budget_high', label: 'Highest Compensation' },
+    { value: 'budget_low', label: 'Lowest Compensation' },
+    { value: 'more_applications', label: 'Most Applications' },
+    { value: 'followers_most', label: 'Most Followers' },
+    { value: 'followers_least', label: 'Least Followers' },
+    { value: 'alphabetical', label: 'A-Z' },
   ];
 
   const filterOptions = {
     status: [
-      { value: 'all', label: 'All Status' },
+      { value: 'all', label: 'All' },
       { value: 'open', label: 'Open' },
-      { value: 'in_progress', label: 'In Progress' },
+      { value: 'no_longer_accepting_applications', label: 'No Longer Accepting Applications' },
+      {value: 'pending_deliverables', label: 'Pending Deliverables'},
       { value: 'completed', label: 'Completed' },
       { value: 'draft', label: 'Draft' }
     ],
     category: [
-      { value: 'all', label: 'All Categories' },
-      { value: 'tech', label: 'Technology' },
-      { value: 'fashion', label: 'Fashion' },
-      { value: 'food', label: 'Food & Drink' },
-      { value: 'travel', label: 'Travel' },
-      { value: 'fitness', label: 'Fitness' }
+        { value: 'all', label: 'All Categories' },
+        { value: "food-beverage",     label: "Food & Beverage",     },
+        { value: "fitness-wellness",  label: "Fitness & Wellness", },
+        { value: "fashion-style",     label: "Fashion & Style",     },
+        { value: "travel-lifestyle",  label: "Travel & Lifestyle",  },
+        { value: "entertainment",     label: "Entertainment",      },
+        { value: "beauty-skincare",   label: "Beauty & Skincare",  },
+        { value: "tech-gadgets",      label: "Tech & Gadgets",     },
+        { value: "brand-awareness",   label: "Brand Awareness",   },
+        { value: "giveaway",          label: "Contest & Giveaway", },
+        { value: "performance",       label: "Performance",        },
+        { value: "influencer-collab", label: "Influencer Collab",  },
+        { value: "content-creation",  label: "Content Creation",   },
     ],
-    //TODO
-    // budget: [
-    //   { value: 'all', label: 'Any Budget' },
-    //   { value: '0-500', label: '$0 - $500' },
-    //   { value: '500-1000', label: '$500 - $1,000' },
-    //   { value: '1000-5000', label: '$1,000 - $5,000' },
-    //   { value: '5000+', label: '$5,000+' }
-    // ]
+    compensationType: [
+      { value: 'money', label: 'Money' },
+      { value: 'other', label: 'Other' },
+    ],
+    platforms: [
+      { value: 'all', label: 'All Platforms' },
+      { value: 'instagram', label: 'Instagram' },
+      { value: 'youtube', label: 'YouTube' },
+      { value: 'tiktok', label: 'TikTok' },
+      { value: 'twitter', label: 'Twitter/X' },
+      { value: 'facebook', label: 'Facebook' },
+      { value: 'linkedin', label: 'LinkedIn' },
+      { value: 'pinterest', label: 'Pinterest' },
+    ],
   };
 
   const notifications = isLoggedIn ? notificationsList.filter(n => n.readBy==false).length : 0;
@@ -288,14 +307,28 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     <header className="header">
       <div className="header-container">
         {/* Logo and Brand */}
-        <div className="header-brand" onClick={() => handleOnClick(location.pathname)}>
-          <span className="logo">
+       <div
+          className="header-brand clickable"
+          onClick={() => handleOnClick(location.pathname)}
+          role="button"
+          tabIndex={0}
+        >
+         <div className="logo-wrapper">
             <div className="logo-icon">
               <Zap size={24} />
             </div>
+
             <span className="brand-name">InfluenceX</span>
-          </span>
+
+            {/* 🔔 Unread badge */}
+            {unreadMessages > 0 && (
+              <span className="notification-logo-count">
+                {unreadMessages}
+              </span>
+            )}
+           </div>
         </div>
+
 
         {/* Search Bar */}
         <div className="header-search">
@@ -483,7 +516,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
                   <div className="user-details">
                     <p className="user-name">{user.name}</p>
                     <p className="user-email">{user.email}</p>
-                    <span className="user-role-badge">{user.role}</span>
+                    {/* <span className="user-role-badge">{user.role}</span> */}
                   </div>
                 </div>
                 
@@ -492,10 +525,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
                     <User size={16} />
                     <span>Profile</span>
                   </Link>
-                  <Link to="/settings" className="menu-item">
+                  {/* <Link to="/settings" className="menu-item">
                     <Settings size={16} />
                     <span>Settings</span>
-                  </Link>
+                  </Link> */}
                   <hr className="menu-divider" />
                   <button className="menu-item logout" onClick={handleLogout}>
                     <LogOut size={16} />

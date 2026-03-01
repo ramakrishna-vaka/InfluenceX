@@ -3,9 +3,11 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export interface FilterState {
-  status: string;
-  category: string;
+  status: string[];
+  category: string[];
   budget: string;
+  compensationType: string;
+  platforms: string[];
 }
 
 interface CampaignFilterContextType {

@@ -1,0 +1,89 @@
+/* MyCollaborations.css
+   Mirrors CampaignLifecycle.css — reuses .stats-dashboard, .stat-card,
+   .stat-icon, .stat-content from CampaignLifecycle.css (import or copy those).
+   Only page-level overrides live here.
+*/
+
+.mycollab-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 24px 40px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.mycollab-header {
+  margin-bottom: 32px;
+}
+
+.mycollab-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.mycollab-header .page-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Stats row — same classes as CampaignLifecycle ───── */
+/* .stats-dashboard, .stat-card, .stat-icon.*, .stat-content
+   are already defined in CampaignLifecycle.css.
+   Add the one new colour token needed for "accepted": */
+
+.stat-icon.accepted {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+}
+
+/* ── Split panel ─────────────────────────────────────── */
+.mycollab-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── Loading ─────────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #94a3b8;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .mycollab-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mycollab-container {
+    padding: 20px;
+  }
+
+  .mycollab-header h1 {
+    font-size: 1.4rem;
+  }
+}

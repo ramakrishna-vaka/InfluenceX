@@ -1,0 +1,147 @@
+/* CollaborationsList.css */
+.collablist-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 280px);
+  overflow: hidden;
+  border: 1px solid #e8ecf4;
+}
+
+.collablist-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.collablist-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+.collablist-count {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.collablist-scroll {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.collablist-scroll::-webkit-scrollbar { width: 5px; }
+.collablist-scroll::-webkit-scrollbar-track { background: #f8fafc; }
+.collablist-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+.collablist-item {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.collablist-item:hover { background: #f8fafc; }
+
+.collablist-item.selected {
+  background: #eef2ff;
+  border-left: 3px solid #6366f1;
+}
+
+.collablist-item-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.collablist-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.collablist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.collablist-campaign-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collablist-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collablist-deadline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.collablist-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.collablist-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.collablist-chevron {
+  color: #cbd5e1;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.collablist-chevron.rotated {
+  transform: rotate(90deg);
+  color: #6366f1;
+}
+
+.collablist-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 14px;
+  text-align: center;
+}

@@ -1,0 +1,550 @@
+/* ApplicationTimeline.css
+   Unified stylesheet for the timeline panel used in both
+   CampaignLifecycle (brand) and MyCollaborations (influencer) flows.
+*/
+
+.apptl-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 28px;
+  max-height: calc(100vh - 380px);
+  overflow-y: auto;
+}
+
+.apptl-container::-webkit-scrollbar          { width: 8px; }
+.apptl-container::-webkit-scrollbar-track    { background: #f1f5f9; border-radius: 4px; }
+.apptl-container::-webkit-scrollbar-thumb    { background: #cbd5e1; border-radius: 4px; }
+.apptl-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Empty ────────────────────────────────────────────── */
+.apptl-empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.apptl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px 20px;
+}
+
+.apptl-empty svg       { margin-bottom: 16px; opacity: 0.4; }
+.apptl-empty h3        { font-size: 1.25rem; font-weight: 700; color: #64748b; margin: 0 0 8px; }
+.apptl-empty p         { font-size: 14px; color: #94a3b8; margin: 0; }
+
+/* ── Campaign header ─────────────────────────────────── */
+.apptl-campaign-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.apptl-campaign-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.28);
+}
+
+.apptl-campaign-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.apptl-campaign-info h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apptl-campaign-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.apptl-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.apptl-meta-item svg { color: #6366f1; }
+
+.apptl-current-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.apptl-btn-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.apptl-btn-message:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+/* ── Pitch message ───────────────────────────────────── */
+.apptl-pitch {
+  background: linear-gradient(135deg, #eff6ff 0%, #f3e8ff 100%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border-left: 4px solid #6366f1;
+  margin-bottom: 20px;
+}
+
+.apptl-pitch-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.apptl-pitch p {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Pending actions ─────────────────────────────────── */
+.apptl-pending-actions {
+  background: #fef3c7;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border-left: 4px solid #f59e0b;
+  margin-bottom: 20px;
+}
+
+.apptl-pending-actions h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #d97706;
+  margin: 0 0 4px 0;
+}
+
+.apptl-pending-actions p {
+  font-size: 13px;
+  color: #92400e;
+  margin: 0 0 14px 0;
+}
+
+.apptl-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.apptl-btn-accept,
+.apptl-btn-reject {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.apptl-btn-accept {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.apptl-btn-accept:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.apptl-btn-reject {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.apptl-btn-reject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ── Status description card ─────────────────────────── */
+.apptl-status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border-left: 4px solid transparent;
+  margin-bottom: 24px;
+}
+
+.apptl-status-card strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.apptl-status-card p {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Section label ───────────────────────────────────── */
+.apptl-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+
+/* ── Timeline track ──────────────────────────────────── */
+.apptl-track {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.apptl-step {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+
+.apptl-connector {
+  position: absolute;
+  left: 19px;
+  top: 42px;
+  width: 2px;
+  height: calc(100% + 4px);
+  z-index: 0;
+}
+
+.apptl-node {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+  transition: box-shadow 0.3s ease;
+}
+
+.apptl-node-active {
+  animation: apptl-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes apptl-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%       { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1); }
+}
+
+.apptl-step-body {
+  flex: 1;
+  padding-top: 6px;
+  padding-bottom: 16px;
+}
+
+.apptl-step-body-latest {
+  background: #fafbff;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+}
+
+.apptl-step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.apptl-step-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.apptl-now-chip {
+  font-size: 10px;
+  font-weight: 700;
+  background: #6366f1;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.apptl-step-time {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.apptl-dot { color: #cbd5e1; }
+
+.apptl-step-desc {
+  font-size: 13px;
+  color: #475569;
+  margin: 6px 0 0 0;
+  line-height: 1.5;
+}
+
+/* ── Deliverables ────────────────────────────────────── */
+.apptl-deliverables {
+  margin-bottom: 20px;
+}
+
+.apptl-deliverable-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.apptl-deliverable-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.apptl-deliverable-row a {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.apptl-deliverable-row a:hover { text-decoration: underline; }
+
+.apptl-deliverable-date { font-size: 11px; color: #94a3b8; }
+
+/* ── Review ──────────────────────────────────────────── */
+.apptl-review { margin-bottom: 20px; }
+
+.apptl-review-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border-left: 4px solid #fbbf24;
+}
+
+.apptl-stars { display: flex; gap: 4px; margin-bottom: 10px; }
+
+.apptl-review-card p  { color: #78350f; font-size: 14px; line-height: 1.6; margin: 0 0 8px 0; }
+.apptl-review-card span { font-size: 12px; color: #92400e; }
+
+/* ── CTA buttons ─────────────────────────────────────── */
+.apptl-cta {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.apptl-btn-review,
+.apptl-btn-paid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.apptl-btn-review {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+}
+
+.apptl-btn-review:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);
+}
+
+.apptl-btn-paid {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.apptl-btn-paid:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+/* ── Modal ───────────────────────────────────────────── */
+.apptl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.apptl-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.apptl-modal h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+.apptl-stars-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.star-clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.star-clickable:hover { transform: scale(1.2); }
+
+.apptl-modal textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.apptl-modal textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.apptl-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.apptl-btn-cancel,
+.apptl-btn-submit {
+  flex: 1;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.apptl-btn-cancel { background: #f1f5f9; color: #64748b; }
+.apptl-btn-cancel:hover { background: #e2e8f0; }
+
+.apptl-btn-submit {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.apptl-btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .apptl-container        { padding: 20px; max-height: none; }
+  .apptl-campaign-header  { flex-wrap: wrap; }
+  .apptl-action-row       { flex-direction: column; }
+  .apptl-cta              { flex-direction: column; }
+}

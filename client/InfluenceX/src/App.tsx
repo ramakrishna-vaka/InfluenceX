@@ -13,7 +13,7 @@ import VerticalNavbar from './components/js/VerticalNavbar.tsx';
 import './App.css';
 import { CampaignFilterProvider } from './CampaignFilterContext.tsx';
 import ApplyToCampaign from './pages/js/ApplyToCampaign.tsx';
-import CreatedCampaigns from './pages/js/CreatedCampaigns.tsx';
+import MyCollaborations from './pages/js/MyCollaborations.tsx';
 import CampaignLifecycle from './components/js/CampaignLifecycle.tsx';
 import Profile from './pages/js/Profile.tsx';
 
@@ -44,8 +44,8 @@ function App() {
           <main className="main-app-content">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/my-applied-posts" element={<MyPosts />} />
-              <Route path="/my-created-campaigns" element={<CreatedCampaigns />} />
+              <Route path="/my-promotions" element={<MyPosts />} />
+              <Route path="/my-collaborations" element={<MyCollaborations />} />
               <Route path="/messages">
                 <Route index element={<Messages />} />
                 <Route path=":chatId" element={<Messages />} />

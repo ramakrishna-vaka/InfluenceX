@@ -34,7 +34,7 @@ public class PostsController {
         try {
             Cookie[] cookies = request.getCookies();
             if (cookies == null) {
-                return postsService.getPosts(null);
+                return postsService.getPostsResponse(null);
             }
 
             // Extract token
@@ -45,26 +45,26 @@ public class PostsController {
                     .orElse(null);
 
             if (token == null) {
-                return postsService.getPosts(null);
+                return postsService.getPostsResponse(null);
             }
 
             // Extract email from token
             String email = jwtService.extractEmail(token);
             if (email == null) {
-                return postsService.getPosts(null);
+                return postsService.getPostsResponse(null);
             }
 
             User user = userRepository.findByEmail(email);
             if (user == null || !jwtService.validateToken(token, user)) {
-                return postsService.getPosts(null);
+                return postsService.getPostsResponse(null);
             }
 
             // Auth success
-            return postsService.getPosts(user);
+            return postsService.getPostsResponse(user);
 
         } catch (Exception e) {
             System.out.println("Error in /posts: " + e.getMessage());
-            return postsService.getPosts(null);
+            return postsService.getPostsResponse(null);
         }
     }
 

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -31,7 +33,14 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ApplicationStatusEnum status = ApplicationStatusEnum.Pending;
+    private ApplicationStatusEnum status = ApplicationStatusEnum.PENDING;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "application_status_list",
+            joinColumns = @JoinColumn(name = "application_id")
+    )
+    private List<ApplicationStatus> applicationStatusList = new ArrayList<>();
 
     @Column(name = "brand_feedback", columnDefinition = "TEXT")
     private String brandFeedback; // Optional feedback from brand when accepting/rejecting
@@ -49,7 +58,7 @@ public class Application {
         this.post = post;
         this.influencer = influencer;
         this.pitchMessage = pitchMessage;
-        this.status = ApplicationStatusEnum.Pending;
+        this.status = ApplicationStatusEnum.PENDING;
         this.appliedAt = LocalDateTime.now();
     }
 
@@ -106,7 +115,7 @@ public class Application {
     public void setStatus(ApplicationStatusEnum status) {
         this.status = status;
         // Auto-set reviewed timestamp when status changes from PENDING
-        if (status != ApplicationStatusEnum.Pending && this.reviewedAt == null) {
+        if (status != ApplicationStatusEnum.PENDING && this.reviewedAt == null) {
             this.reviewedAt = LocalDateTime.now();
         }
     }
@@ -129,7 +138,7 @@ public class Application {
      * Accept this application with optional feedback
      */
     public void accept(String feedback) {
-        this.status = ApplicationStatusEnum.Accepted;
+        this.status = ApplicationStatusEnum.ACCEPTED;
         this.brandFeedback = feedback;
         this.reviewedAt = LocalDateTime.now();
     }
@@ -138,7 +147,7 @@ public class Application {
      * Reject this application with optional feedback
      */
     public void reject(String feedback) {
-        this.status = ApplicationStatusEnum.Rejected;
+        this.status = ApplicationStatusEnum.REJECTED;
         this.brandFeedback = feedback;
         this.reviewedAt = LocalDateTime.now();
     }
@@ -147,8 +156,8 @@ public class Application {
      * Influencer withdraws their application
      */
     public void withdraw() {
-        if (this.status == ApplicationStatusEnum.Pending) {
-            this.status = ApplicationStatusEnum.Withdraw;
+        if (this.status == ApplicationStatusEnum.PENDING) {
+            this.status = ApplicationStatusEnum.WITHDRAW;
             this.reviewedAt = LocalDateTime.now();
         } else {
             throw new IllegalStateException("Cannot withdraw application that has already been reviewed");
@@ -159,42 +168,42 @@ public class Application {
      * Check if application is still pending
      */
     public boolean isPending() {
-        return this.status == ApplicationStatusEnum.Pending;
+        return this.status == ApplicationStatusEnum.PENDING;
     }
 
     /**
      * Check if application was accepted
      */
     public boolean isAccepted() {
-        return this.status == ApplicationStatusEnum.Accepted;
+        return this.status == ApplicationStatusEnum.ACCEPTED;
     }
 
     /**
      * Check if application was rejected
      */
     public boolean isRejected() {
-        return this.status == ApplicationStatusEnum.Rejected;
+        return this.status == ApplicationStatusEnum.REJECTED;
     }
 
     /**
      * Check if application was withdrawn
      */
     public boolean isWithdrawn() {
-        return this.status == ApplicationStatusEnum.Withdraw;
+        return this.status == ApplicationStatusEnum.WITHDRAW;
     }
 
     /**
      * Check if brand can still review this application
      */
     public boolean canBeReviewed() {
-        return this.status == ApplicationStatusEnum.Pending;
+        return this.status == ApplicationStatusEnum.PENDING;
     }
 
     /**
      * Check if influencer can withdraw this application
      */
     public boolean canBeWithdrawn() {
-        return this.status == ApplicationStatusEnum.Pending;
+        return this.status == ApplicationStatusEnum.PENDING;
     }
 
     @Override
@@ -207,4 +216,28 @@ public class Application {
                 ", appliedAt=" + appliedAt +
                 '}';
     }
+
+    public List<ApplicationStatus> getApplicationStatusList(){
+        return applicationStatusList;
+    }
+
+    public void setApplicationStatusList(List<ApplicationStatus> applicationStatusList){
+        this.applicationStatusList=applicationStatusList;
+    }
+
+//    public void setStatus(ApplicationStatusEnum status) {
+//        this.status = status;
+//
+//        if (applicationStatusList == null) {
+//            applicationStatusList = new ArrayList<>();
+//        }
+//
+//        applicationStatusList.add(
+//                new ApplicationStatus(status, LocalDateTime.now())
+//        );
+//
+//        if (status != ApplicationStatusEnum.PENDING && this.reviewedAt == null) {
+//            this.reviewedAt = LocalDateTime.now();
+//        }
+//    }
 }

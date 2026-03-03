@@ -24,9 +24,13 @@ public class PostsService {
         this.userRepository = userRepository;
     }
 
-    public List<PostResponseDTO> getPosts(User loggedUser) {
-        List<Posts> posts = postsRepository.findAll();
+    public List<PostResponseDTO> getPostsResponse(User loggedUser) {
+        List<Posts> posts = getPosts();
         return posts.stream().map(post -> getPostResponseDTO(post,loggedUser)).collect(Collectors.toList());
+    }
+
+    public List<Posts> getPosts(){
+        return postsRepository.findAll();
     }
 
 

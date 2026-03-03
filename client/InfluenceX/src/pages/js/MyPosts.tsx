@@ -1,178 +1,225 @@
-// MyPosts.tsx
-import React, { useEffect } from 'react';
-import { Users, DollarSign, Calendar, Image as ImageIcon, User,  Star } from 'lucide-react';
-import { FileText, Plus } from 'lucide-react';
-import { useAuth } from '../../AuthProvider';
-import CreateCampaignDialog from './../../components/js/CreateCampaignDialog';
-import { useState } from 'react';
-import type { Post } from '../../utils/Posts'
+import React, { useState, useEffect } from 'react';
+import { Users, Eye, TrendingUp, Calendar, DollarSign, Clock, Activity } from 'lucide-react';
+import '../css/MyPosts.css';
+import { useNavigate } from 'react-router-dom';
+
+interface Campaign {
+  imageBase64: any;
+  id: string;
+  title: string;
+  image?: string;
+  category: string;
+  price: number;
+  deadline: string;
+  status: 'open' | 'in-progress' | 'completed';
+  applicants: number;
+  pendingCount: number;
+  acceptedCount: number;
+  inProgressCount: number;
+  completedCount: number;
+  description: string;
+  applications: any[];
+}
 
 const MyPosts: React.FC = () => {
-  const { authUser } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const close = () => { setIsOpen(false); }
-  const [isLoading, setLoading] = useState(true);
-  const [myPostsData, setMyPosts] = useState<Post[]>([]);
-   const [error, setError] = useState<string | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-      const fetchMyPosts = async () => {
-        try {
-          setLoading(true);
-          const response = await fetch('http://localhost:8080/my-posts', {
-            method:'GET',
-            headers:{
-                    'Content-Type':'application/json'
-                },
-            credentials: 'include'
-          });
-          if (!response.ok) {
-            throw new Error('Failed to fetch posts');
-          }
-          const myPostsData = await response.json();
-          setMyPosts(myPostsData);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'An error occurred');
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      fetchMyPosts();
+    fetchCampaigns();
   }, []);
-  
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'open':
-        return { className: 'status-open', text: 'Open' };
-      case 'in-progress':
-        return { className: 'status-progress', text: 'In Progress' };
-      case 'completed':
-        return { className: 'status-completed', text: 'Completed' };
-      default:
-        return { className: 'status-open', text: 'Open' };
+
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:8080/my-posts', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setCampaigns(data);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  const handleCampaignClick = (campaignId: string) => {
+    navigate(`/campaigns/${campaignId}/lifecycle`);
   };
 
-  const formatFollowers = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count?.toString();
+  const getTotalStats = () => {
+    return {
+      totalCampaigns: campaigns.length,
+      totalApplications: campaigns.reduce((sum, c) => sum + c.applicants, 0),
+      activeCampaigns: campaigns.filter(c => c.status === 'open' || c.status === 'in-progress').length,
+      completedCampaigns: campaigns.filter(c => c.status === 'completed').length,
+    };
   };
-  
-  return (<>
-    <div className="main-content">
-      <div className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            My <span className="gradient-text">Campaigns</span>
-          </h1>
-          <p className="hero-subtitle">
-            Manage and track all your brand collaboration campaigns
-          </p>
+
+  const stats = getTotalStats();
+
+  if (loading) {
+    return (
+      <div className="updated-campaigns-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading campaigns...</p>
         </div>
       </div>
-      
-      <div className="content-section">
-        {myPostsData.length > 0 ? (
-          <div className="posts-grid">
-            {myPostsData.map(post => {
-              const statusConfig = getStatusConfig(post.status);
-              const hasImage = post.image && post.image.trim() !== '';
-              
-              return (
-                <div key={post.id} className={`post-card ${hasImage ? 'has-image' : 'no-image'}`}>
-                  {hasImage && (
-                    <div className="post-image">
-                      <img src={post.image} alt={post.title} />
-                      <div className="post-overlay">
-                        <span className={statusConfig.className}>
-                          {statusConfig.text}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="post-content">
-                    <div className="post-header">
-                      <div className="post-title-section">
-                        {!hasImage && (
-                          <div className="post-icon-placeholder">
-                            <ImageIcon size={20} />
-                          </div>
-                        )}
-                        <h3 className="post-title">{post.title}</h3>
-                        {!hasImage && (
-                          <span className={statusConfig.className}>
-                            {statusConfig.text}
-                          </span>
-                        )}
-                      </div>
-                      <span className="post-category">{post.category}</span>
-                    </div>
-                    
-                    <p className="post-description">{post.description}</p>
-                    
-                    <div className="post-metrics">
-                      <div className="metric price-metric">
-                        <DollarSign className="metric-icon" size={16} />
-                        <span className="metric-value">{formatCurrency(post.price)}</span>
-                      </div>
-                      <div className="metric">
-                        <Users className="metric-icon" size={16} />
-                        <span>{formatFollowers(post.minFollowers)}+ followers</span>
-                      </div>
-                      <div className="metric">
-                        <Calendar className="metric-icon" size={16} />
-                        <span>{new Date(post.deadline).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="post-footer">
-                      <div className="post-author">
-                        <div className="author-avatar">
-                          <User size={14} />
-                        </div>
-                        <span>{post.authorName}</span>
-                      </div>
-                      <div className="post-rating">
-                        <Star size={14} fill="currentColor" />
-                        <span>4.8</span>
-                      </div>
-                    </div>
+    );
+  }
 
-                    <div className="post-actions">
-                      <button className="btn-primary">
-                        {post.isMyPost ? 'Manage Campaign' : 'Apply Now'}
-                      </button>
-                      <button className="btn-secondary">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+  return (
+    <div className="updated-campaigns-container">
+      <div className="campaigns-page-header">
+        <div>
+          <h1>Campaign Management</h1>
+          <p className="page-description">Track and manage your influencer marketing campaigns</p>
+        </div>
+      </div>
+
+      <div className="overview-stats">
+        <div className="overview-card">
+          <div className="overview-icon campaigns">
+            <Activity size={28} />
+          </div>
+          <div className="overview-content">
+            <p className="overview-label">Total Campaigns</p>
+            <h2>{stats?.totalCampaigns}</h2>
+            <span className="overview-sublabel">{stats.activeCampaigns} active</span>
+          </div>
+        </div>
+
+        <div className="overview-card">
+          <div className="overview-icon applications">
+            <Users size={28} />
+          </div>
+          <div className="overview-content">
+            <p className="overview-label">Total Applications</p>
+            <h2>{stats.totalApplications}</h2>
+            <span className="overview-sublabel">All campaigns</span>
+          </div>
+        </div>
+
+        <div className="overview-card">
+          <div className="overview-icon active">
+            <TrendingUp size={28} />
+          </div>
+          <div className="overview-content">
+            <p className="overview-label">Active Campaigns</p>
+            <h2>{stats.activeCampaigns}</h2>
+            <span className="overview-sublabel">In progress</span>
+          </div>
+        </div>
+
+        <div className="overview-card">
+          <div className="overview-icon completed">
+            <Eye size={28} />
+          </div>
+          <div className="overview-content">
+            <p className="overview-label">Completed</p>
+            <h2>{stats.completedCampaigns}</h2>
+            <span className="overview-sublabel">Successfully finished</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="campaigns-section">
+        <div className="section-header">
+          <h2>Your Campaigns</h2>
+          <p>{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''} found</p>
+        </div>
+
+        {campaigns.length === 0 ? (
+          <div className="empty-campaigns-state">
+            <Activity size={64} />
+            <h3>No campaigns yet</h3>
+            <p>Create your first campaign to start collaborating with influencers</p>
+            <button className="btn-create-first" onClick={() => navigate('/create-campaign')}>
+              Create Your First Campaign
+            </button>
           </div>
         ) : (
-          <div className="empty-state">
-            <FileText size={64} className="empty-icon" />
-            <h3>No campaigns yet</h3>
-            <p>Create your first campaign to start collaborating with influencers.</p>
-            <button className="btn-primary" style={{ marginTop: '20px' }} onClick={() => setIsOpen(true)}>
-              <Plus size={20} style={{ marginRight: '8px' }} />
-              Create Campaign
-            </button>
+          <div className="campaigns-grid">
+            {campaigns.map(campaign => (
+              <div
+                key={campaign.id}
+                className="campaign-grid-card"
+                onClick={() => handleCampaignClick(campaign.id)}
+              >
+                {campaign.imageBase64 && (
+                  <div className="campaign-image-container">
+                    <img src={`data:image/*;base64,${campaign.imageBase64}`}  alt={campaign.title} />
+                    <div className={`status-overlay status-${campaign.status}`}>
+                      {campaign.status}
+                    </div>
+                  </div>
+                )}
+
+                <div className="campaign-card-content">
+                  <div className="campaign-card-header">
+                    <h3>{campaign.title}</h3>
+                    <span className="campaign-category-badge">{campaign.category}</span>
+                  </div>
+
+                  <div className="campaign-meta-info">
+                    <div className="meta-info-item">
+                      <DollarSign size={16} />
+                      <span>${campaign.price}</span>
+                    </div>
+                    <div className="meta-info-item">
+                      <Calendar size={16} />
+                      <span>{new Date(campaign.deadline).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      })}</span>
+                    </div>
+                  </div>
+
+                  <div className="campaign-progress">
+                    <div className="progress-item">
+                      <div className="progress-label">
+                        <Users size={14} />
+                        <span>Applications</span>
+                      </div>
+                      <span className="progress-value">{campaign.applicants}</span>
+                    </div>
+                    {campaign.pendingCount > 0 && (
+                      <div className="progress-item pending">
+                        <div className="progress-label">
+                          <Clock size={14} />
+                          <span>Pending</span>
+                        </div>
+                        <span className="progress-value">{campaign.pendingCount}</span>
+                      </div>
+                    )}
+                    {campaign.inProgressCount > 0 && (
+                      <div className="progress-item in-progress">
+                        <div className="progress-label">
+                          <Activity size={14} />
+                          <span>Active</span>
+                        </div>
+                        <span className="progress-value">{campaign.inProgressCount}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="campaign-card-footer">
+                    <span className="view-lifecycle">View Campaign Lifecycle →</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
-    </div >
-    <CreateCampaignDialog isOpen={isOpen} onClose={close} userId={authUser?.id} />
-    </>
+    </div>
   );
 };
 

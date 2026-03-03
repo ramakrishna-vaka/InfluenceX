@@ -1,11 +1,11 @@
 package com.project.InfluenceX.model;
 
 public enum ApplicationStatusEnum {
-    Open,
-    Completed,
-    Pending,
-    Accepted,
-    InProgress,
-    Rejected,
-    Withdraw
+    SETTLED,
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    WITHDRAW,
+    PENDING_DELIVERABLES,
+    REVIEWING
 }

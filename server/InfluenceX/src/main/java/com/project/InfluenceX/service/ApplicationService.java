@@ -56,7 +56,7 @@ public class ApplicationService {
         application.setInfluencer(user);
         application.setAppliedAt(LocalDateTime.now());
         application.setPitchMessage(applicationDTO.getPitchMessage());
-        application.setStatus(ApplicationStatusEnum.Pending);
+        application.setStatus(ApplicationStatusEnum.PENDING);
         applicationRepository.save(application);
         PostsService.setApplications(post,application);
         return ResponseEntity.ok(application);

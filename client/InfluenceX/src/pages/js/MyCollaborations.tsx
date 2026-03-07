@@ -4,29 +4,17 @@ import '../css/MyCollaborations.css';
 import CollaborationsList from '../../components/js/CollaborationsList';
 import ApplicationTimeline from '../../components/js/ApplicationTimeline';
 
-export interface StatusEvent {
-  status: string;
-  timestamp: string;
-}
+export interface StatusEvent { status: string; timestamp: string; }
 
 export interface Collaboration {
-  postId: string;
-  title: string;
-  applicationId: string;
-  userName: string;
-  userId: string;
-  applicationStatusList: StatusEvent[];
-  deadline: string;
+  postId: string; title: string; applicationId: string;
+  userName: string; userId: string;
+  applicationStatusList: StatusEvent[]; deadline: string;
 }
 
 export interface Counts {
-  accepted: number;
-  settled: number;
-  pending: number;
-  reviewing: number;
-  rejected: number;
-  withdrawn: number;
-  pendingDeliverables: number;
+  accepted: number; settled: number; pending: number; reviewing: number;
+  rejected: number; withdrawn: number; pendingDeliverables: number;
 }
 
 const MyCollaborations: React.FC = () => {
@@ -36,26 +24,19 @@ const MyCollaborations: React.FC = () => {
   const [selected, setSelected] = useState<Collaboration | null>(null);
   const [statsFilter, setStatsFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchCollaborations();
-  }, []);
+  useEffect(() => { fetchCollaborations(); }, []);
 
   const fetchCollaborations = async () => {
     try {
       setLoading(true);
       const res = await fetch('http://localhost:8080/my-collaborations', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       });
       const data = await res.json();
       setCollaborations(data.posts || []);
       setCounts(data.counts || null);
-    } catch (err) {
-      console.error('Error fetching collaborations:', err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error('Error:', err); }
+    finally { setLoading(false); }
   };
 
   const getCurrentStatus = (c: Collaboration): string => {
@@ -72,8 +53,7 @@ const MyCollaborations: React.FC = () => {
     completed: counts?.settled ?? 0,
   };
 
-  const filtered = statsFilter === 'all'
-    ? collaborations
+  const filtered = statsFilter === 'all' ? collaborations
     : collaborations.filter(c => {
         const s = getCurrentStatus(c);
         if (statsFilter === 'pending')     return s === 'pending';
@@ -83,64 +63,43 @@ const MyCollaborations: React.FC = () => {
         return true;
       });
 
-  if (loading) {
-    return (
-      <div className="mycollab-container">
-        <div className="loading-state">
-          <div className="loading-spinner" />
-          <p>Loading collaborations...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className='mycollab-container'>
+      <div className='loading-state'><div className='loading-spinner' /><p>Loading...</p></div>
+    </div>
+  );
+
+  const pill = (filter: string, cls: string, icon: React.ReactNode, count: number, label: string) => (
+    <button
+      className={['stat-pill', cls, statsFilter === filter ? 'active' : ''].join(' ')}
+      onClick={() => { setStatsFilter(filter); setSelected(null); }}
+    >
+      {icon}<strong>{count}</strong><span>{label}</span>
+    </button>
+  );
 
   return (
-    <div className="mycollab-container">
-      {/* Header */}
-      <div className="mycollab-header">
-        <div>
+    <div className='mycollab-container'>
+      <div className='mycollab-topbar'>
+        <div className='mycollab-topbar-title'>
           <h1>My Collaborations</h1>
-          <p className="page-description">Track every campaign you've applied to</p>
+          <span className='mycollab-topbar-sub'>Track every campaign you've applied to</span>
+        </div>
+        <div className='topbar-stats'>
+          {pill('all',         'stat-pill-total',    <Users size={12} />,     stats.total,      'All')}
+          {pill('pending',     'stat-pill-pending',  <Clock size={12} />,     stats.pending,    'Pending')}
+          {pill('in-progress', 'stat-pill-progress', <Package size={12} />,   stats.inProgress, 'Active')}
+          {pill('accepted',    'stat-pill-accepted', <TrendingUp size={12} />,stats.accepted,   'Accepted')}
+          {pill('completed',   'stat-pill-completed',<CheckCircle size={12} />,stats.completed, 'Settled')}
         </div>
       </div>
 
-      {/* Stats — identical markup to CampaignLifecycle stats-dashboard */}
-      <div className="stats-dashboard">
-        <div className="stat-card" onClick={() => { setStatsFilter('all'); setSelected(null); }}>
-          <div className="stat-icon total"><Users size={24} /></div>
-          <div className="stat-content"><h3>{stats.total}</h3><p>Total</p></div>
-        </div>
-        <div className="stat-card" onClick={() => { setStatsFilter('pending'); setSelected(null); }}>
-          <div className="stat-icon pending"><Clock size={24} /></div>
-          <div className="stat-content"><h3>{stats.pending}</h3><p>Pending</p></div>
-        </div>
-        <div className="stat-card" onClick={() => { setStatsFilter('in-progress'); setSelected(null); }}>
-          <div className="stat-icon progress"><Package size={24} /></div>
-          <div className="stat-content"><h3>{stats.inProgress}</h3><p>In Progress</p></div>
-        </div>
-        <div className="stat-card" onClick={() => { setStatsFilter('accepted'); setSelected(null); }}>
-          <div className="stat-icon accepted"><TrendingUp size={24} /></div>
-          <div className="stat-content"><h3>{stats.accepted}</h3><p>Accepted</p></div>
-        </div>
-        <div className="stat-card" onClick={() => { setStatsFilter('completed'); setSelected(null); }}>
-          <div className="stat-icon completed"><CheckCircle size={24} /></div>
-          <div className="stat-content"><h3>{stats.completed}</h3><p>Settled</p></div>
-        </div>
-      </div>
-
-      {/* Split panel — same grid as lifecycle-content */}
-      <div className="mycollab-content">
+      <div className='mycollab-content'>
         <CollaborationsList
-          collaborations={filtered}
-          selected={selected}
-          onSelect={setSelected}
-          filterStatus={statsFilter}
-          getCurrentStatus={getCurrentStatus}
+          collaborations={filtered} selected={selected} onSelect={setSelected}
+          filterStatus={statsFilter} getCurrentStatus={getCurrentStatus}
         />
-        <ApplicationTimeline
-          collaboration={selected}
-          onRefresh={fetchCollaborations}
-        />
+        <ApplicationTimeline collaboration={selected} onRefresh={fetchCollaborations} />
       </div>
     </div>
   );

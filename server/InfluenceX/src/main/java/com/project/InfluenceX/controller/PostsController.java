@@ -72,48 +72,8 @@ public class PostsController {
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable Long postId) {
         try {
-            Posts post = postsService.getPostById(postId);
-
-            PostResponseDTO dto = new PostResponseDTO();
-            dto.setId(post.getId());
-            User user=post.getCreatedBy();
-            UserDTO createdBy=new UserDTO();
-            createdBy.setName(user.getName());
-            createdBy.setEmail(user.getEmail());
-            dto.setCreatedBy(createdBy);
-            //dto.setBudget(post.getBudget());
-            dto.setDeadline(post.getDeadline());
-            dto.setLocation(post.getLocation());
-            dto.setType(post.getType());
-            dto.setTitle(post.getTitle());
-            dto.setTitle(post.getTitle());
-            dto.setDescription(post.getDescription());
-            dto.setFollowers(post.getFollowers());
-            dto.setApplicants(post.getApplicants());
-            dto.setOpenRoles(post.getOpenRoles());
-            dto.setPostStatus(post.getPostStatus().name());
-            dto.setPlatformsNeeded(post.getPlatformsNeeded().toArray(new String[0]));
-
-            // Convert image to Base64
-            if (post.getImageData() != null) {
-                dto.setImageBase64(Base64.getEncoder().encodeToString(post.getImageData()));
-            }
-
-            // Convert applications
-            List<ApplicationDTO> apps = post.getApplications()
-                    .stream()
-                    .map(app -> {
-                        ApplicationDTO a = new ApplicationDTO();
-                        a.setPostId(app.getId());
-                        a.setInfluencerId(app.getInfluencer().getId());
-                        a.setPitchMessage(app.getPitchMessage());
-                        return a;
-                    })
-                    .toList();
-
-            dto.setApplications(apps);
-
-            return ResponseEntity.ok(dto);
+            PostResponseDTO response = postsService.getPostResponseById(postId);
+            return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

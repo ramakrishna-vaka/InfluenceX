@@ -33,7 +33,7 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ApplicationStatusEnum status = ApplicationStatusEnum.PENDING;
+    private ApplicationStatusEnum status ;
 
     @ElementCollection
     @CollectionTable(
@@ -48,8 +48,9 @@ public class Application {
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt = LocalDateTime.now();
 
-    @Column(name = "reviewed_at")
-    private LocalDateTime reviewedAt;
+    @OneToOne(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Payment payment;
+
 
     // Constructors
     public Application() {}
@@ -91,10 +92,6 @@ public class Application {
         return appliedAt;
     }
 
-    public LocalDateTime getReviewedAt() {
-        return reviewedAt;
-    }
-
     // ---------- SETTERS ----------
     public void setId(Long id) {
         this.id = id;
@@ -112,14 +109,6 @@ public class Application {
         this.pitchMessage = pitchMessage;
     }
 
-    public void setStatus(ApplicationStatusEnum status) {
-        this.status = status;
-        // Auto-set reviewed timestamp when status changes from PENDING
-        if (status != ApplicationStatusEnum.PENDING && this.reviewedAt == null) {
-            this.reviewedAt = LocalDateTime.now();
-        }
-    }
-
     public void setBrandFeedback(String brandFeedback) {
         this.brandFeedback = brandFeedback;
     }
@@ -128,9 +117,10 @@ public class Application {
         this.appliedAt = appliedAt;
     }
 
-    public void setReviewedAt(LocalDateTime reviewedAt) {
-        this.reviewedAt = reviewedAt;
-    }
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"application"})
+    private List<Deliverable> deliverables = new ArrayList<>();
+
 
     // ---------- BUSINESS LOGIC METHODS ----------
 
@@ -140,7 +130,6 @@ public class Application {
     public void accept(String feedback) {
         this.status = ApplicationStatusEnum.ACCEPTED;
         this.brandFeedback = feedback;
-        this.reviewedAt = LocalDateTime.now();
     }
 
     /**
@@ -149,7 +138,6 @@ public class Application {
     public void reject(String feedback) {
         this.status = ApplicationStatusEnum.REJECTED;
         this.brandFeedback = feedback;
-        this.reviewedAt = LocalDateTime.now();
     }
 
     /**
@@ -158,7 +146,6 @@ public class Application {
     public void withdraw() {
         if (this.status == ApplicationStatusEnum.PENDING) {
             this.status = ApplicationStatusEnum.WITHDRAW;
-            this.reviewedAt = LocalDateTime.now();
         } else {
             throw new IllegalStateException("Cannot withdraw application that has already been reviewed");
         }
@@ -221,23 +208,43 @@ public class Application {
         return applicationStatusList;
     }
 
-    public void setApplicationStatusList(List<ApplicationStatus> applicationStatusList){
-        this.applicationStatusList=applicationStatusList;
+    public void setStatus(ApplicationStatusEnum status) {
+        this.status = status; //tells us the latest status
+
+        if (applicationStatusList == null) {
+            applicationStatusList = new ArrayList<>();
+        }
+
+        applicationStatusList.add(
+                new ApplicationStatus(status, LocalDateTime.now())
+        );
     }
 
-//    public void setStatus(ApplicationStatusEnum status) {
-//        this.status = status;
-//
-//        if (applicationStatusList == null) {
-//            applicationStatusList = new ArrayList<>();
-//        }
-//
-//        applicationStatusList.add(
-//                new ApplicationStatus(status, LocalDateTime.now())
-//        );
-//
-//        if (status != ApplicationStatusEnum.PENDING && this.reviewedAt == null) {
-//            this.reviewedAt = LocalDateTime.now();
-//        }
-//    }
+    public ApplicationStatusEnum getCurrentStatus(){
+        return status;
+    }
+
+    public void setDeliverables(List<Deliverable> deliverables) {
+        this.deliverables = deliverables;
+    }
+
+    public void addDeliverable(Deliverable deliverable) {
+        deliverables.add(deliverable);
+        deliverable.setApplication(this);
+    }
+
+
+    public List<Deliverable> getDeliverables() {
+        return deliverables;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+
 }

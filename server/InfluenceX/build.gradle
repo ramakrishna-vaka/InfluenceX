@@ -48,6 +48,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.postgresql:postgresql:42.7.2'
 
+	//json
+	implementation 'org.json:json:20240303'
+
+	//Razor pay
+	implementation 'com.razorpay:razorpay-java:1.4.4'
+
 }
 
 tasks.named('test') {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Eye, TrendingUp, Calendar, DollarSign, Clock, Activity } from 'lucide-react';
+import { Users, Eye, TrendingUp, Calendar, DollarSign, Clock, Activity, Gift } from 'lucide-react';
 import '../css/MyPosts.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +19,8 @@ interface Campaign {
   completedCount: number;
   description: string;
   applications: any[];
+  compensationType: string;
+  compensationDescription: string;
 }
 
 const MyPosts: React.FC = () => {
@@ -170,8 +172,9 @@ const MyPosts: React.FC = () => {
 
                   <div className="campaign-meta-info">
                     <div className="meta-info-item">
-                      <DollarSign size={16} />
-                      <span>${campaign.price}</span>
+                      {campaign.compensationType === 'money'? ( <><DollarSign size={16} /><span>${campaign.compensationDescription}</span></>
+                      ): (<><Gift size={16} /><span>{campaign.compensationDescription || 'Other'}</span></>
+                      )}
                     </div>
                     <div className="meta-info-item">
                       <Calendar size={16} />
@@ -188,7 +191,7 @@ const MyPosts: React.FC = () => {
                         <Users size={14} />
                         <span>Applications</span>
                       </div>
-                      <span className="progress-value">{campaign.applicants}</span>
+                      <span className="progress-value">{campaign.applications.length}</span>
                     </div>
                     {campaign.pendingCount > 0 && (
                       <div className="progress-item pending">

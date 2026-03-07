@@ -1,171 +1,188 @@
 /* CampaignLifecycle.css */
+
 .lifecycle-container {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 24px 40px;
+  padding: 16px 24px 24px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.lifecycle-header {
-  margin-bottom: 32px;
-}
+/* ═══════════════════════════════════════════════════════
+   COMPACT TOPBAR  (replaces old lifecycle-header + stats-dashboard)
+   ═══════════════════════════════════════════════════════ */
 
-.btn-back-header {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 20px;
-}
-
-.btn-back-header:hover {
-  background: #f8fafc;
-  border-color: #6366f1;
-  color: #6366f1;
-}
-
-.campaign-header-info {
+.lifecycle-topbar {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  gap: 16px;
   background: white;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.campaign-header-left {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.campaign-header-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  object-fit: cover;
-}
-
-.campaign-header-info h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 4px;
-}
-
-.campaign-category {
-  display: inline-block;
-  background: #e0e7ff;
-  color: #6366f1;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.campaign-header-meta {
-  display: flex;
-  gap: 24px;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.meta-item svg {
-  color: #6366f1;
-}
-
-.stats-dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: white;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  border-color: #6366f1;
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
   border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8ecf4;
+  flex-wrap: wrap;
+  flex-shrink: 0;       /* never compress the topbar */
+}
+
+/* Left side — back btn + campaign image + title/meta */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.btn-back-compact {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.btn-back-compact:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.topbar-campaign-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
   flex-shrink: 0;
 }
 
-.stat-icon.total {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.topbar-campaign-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.stat-icon.pending {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.stat-icon.progress {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-}
-
-.stat-icon.completed {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: white;
-}
-
-.stat-content h3 {
-  font-size: 2rem;
+.topbar-campaign-title {
+  font-size: 15px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.stat-content p {
+.topbar-campaign-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.topbar-type-badge {
+  background: #e0e7ff;
+  color: #6366f1;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.topbar-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
   color: #64748b;
-  font-size: 14px;
   font-weight: 500;
 }
+
+.topbar-meta-chip svg {
+  color: #6366f1;
+  flex-shrink: 0;
+}
+
+/* Right side — stat pills */
+.topbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.stat-pill strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stat-pill:hover {
+  border-color: currentColor;
+  background: white;
+}
+
+/* Colour variants */
+.stat-pill-total        { --pill-color: #6366f1; --pill-bg: #e0e7ff; }
+.stat-pill-pending      { --pill-color: #f59e0b; --pill-bg: #fef3c7; }
+.stat-pill-progress     { --pill-color: #0891b2; --pill-bg: #cffafe; }
+.stat-pill-completed    { --pill-color: #059669; --pill-bg: #d1fae5; }
+
+.stat-pill-total        { color: #4b5563; }
+.stat-pill-pending      { color: #4b5563; }
+.stat-pill-progress     { color: #4b5563; }
+.stat-pill-completed    { color: #4b5563; }
+
+.stat-pill-total.active   { background: var(--pill-bg); border-color: var(--pill-color); color: var(--pill-color); }
+.stat-pill-pending.active { background: var(--pill-bg); border-color: var(--pill-color); color: var(--pill-color); }
+.stat-pill-progress.active{ background: var(--pill-bg); border-color: var(--pill-color); color: var(--pill-color); }
+.stat-pill-completed.active{background: var(--pill-bg); border-color: var(--pill-color); color: var(--pill-color); }
+
+/* ═══════════════════════════════════════════════════════
+   SPLIT PANEL  (unchanged)
+   ═══════════════════════════════════════════════════════ */
 
 .lifecycle-content {
   display: grid;
   grid-template-columns: 400px 1fr;
   gap: 24px;
   max-width: 1600px;
+  width: 100%;
   margin: 0 auto;
+  flex: 1;
+  min-height: 0;        /* critical: lets flex child shrink below content size */
 }
+
+/* ═══════════════════════════════════════════════════════
+   LOADING / ERROR
+   ═══════════════════════════════════════════════════════ */
 
 .loading-state,
 .error-state {
@@ -191,10 +208,7 @@
   to { transform: rotate(360deg); }
 }
 
-.error-state p {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
+.error-state p { font-size: 18px; margin-bottom: 20px; }
 
 .btn-back {
   padding: 10px 20px;
@@ -207,9 +221,11 @@
   transition: background 0.2s ease;
 }
 
-.btn-back:hover {
-  background: #4f46e5;
-}
+.btn-back:hover { background: #4f46e5; }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════ */
 
 @media (max-width: 1200px) {
   .lifecycle-content {
@@ -217,28 +233,22 @@
   }
 }
 
-@media (max-width: 768px) {
-  .lifecycle-container {
-    padding: 20px;
-  }
-
-  .campaign-header-info {
+@media (max-width: 900px) {
+  .lifecycle-topbar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
-  }
-
-  .campaign-header-meta {
-    flex-direction: column;
     gap: 12px;
+  }
+
+  .topbar-stats {
     width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
+}
 
-  .stats-dashboard {
-    grid-template-columns: 1fr;
-  }
-
-  .stat-card {
-    padding: 20px;
-  }
+@media (max-width: 600px) {
+  .lifecycle-container { padding: 12px 16px 20px; }
+  .topbar-campaign-title { font-size: 14px; }
+  .stat-pill span:last-child { display: none; }   /* hide label, keep icon + number */
 }

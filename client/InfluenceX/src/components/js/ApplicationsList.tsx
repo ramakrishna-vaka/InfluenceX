@@ -4,14 +4,11 @@ import '../css/ApplicationsList.css';
 
 interface Application {
   id: string;
-  influencer: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
+  influencerId: string;
+  influencerName: string;
+  influencerImage?: string;
   followers: number;
-  status: 'pending' | 'accepted' | 'rejected' | 'in-progress' | 'delivered' | 'completed';
+  currentStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'IN_PROGRESS' | 'DELIVERED' | 'COMPLETED';
   appliedAt: string;
   pitchMessage: string;
 }
@@ -86,26 +83,29 @@ const ApplicationsList: React.FC<ApplicationsListProps> = ({
             >
               <div className="application-item-header">
                 <div className="influencer-avatar-small">
-                  {application.influencer?.avatar ? (
-                    <img src={application.influencer.avatar} alt={application.influencer.name} />
+                  {application.influencerImage ? (
+                    <img 
+                        src={`data:image/*;base64,${application.influencerImage}`} 
+                        alt={application.influencerName}
+                      />
                   ) : (
                     <div className="avatar-placeholder-small">
-                      {application.influencer?.name?.charAt(0)}
+                      {application.influencerName?.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div className="influencer-info-small">
-                  <h4>{application.influencer?.name}</h4>
-                  <p className="followers-small">
+                  <h4>{application.influencerName}</h4>
+                  {/* <p className="followers-small">
                     <Users size={12} />
                     {formatFollowers(application.followers)}
-                  </p>
+                  </p> */}
                 </div>
               </div>
 
-              <div className={`status-badge status-${application.status}`}>
-                {getStatusIcon(application.status)}
-                <span>{application.status?.replace('-', ' ')}</span>
+              <div className={`status-badge status-${application.currentStatus}`}>
+                {getStatusIcon(application.currentStatus)}
+                <span>{application.currentStatus?.replace('_', ' ')}</span>
               </div>
 
               <div className="application-date-small">

@@ -23,11 +23,17 @@ public class ModelToDTOMapper {
 
     public static ApplicationDTO getApplicationDTO(Application application){
         ApplicationDTO applicationDTO=new ApplicationDTO();
-        applicationDTO.setApplicationStatus(application.getStatus().toString());
+        applicationDTO.setApplicationStatus(application.getApplicationStatusList());
         applicationDTO.setPostId(application.getPost().getId());
         applicationDTO.setInfluencerId(application.getInfluencer().getId());
         applicationDTO.setPitchMessage(application.getPitchMessage());
+        applicationDTO.setInfluencerName(application.getInfluencer().getName());
         applicationDTO.setAppliedAt(application.getAppliedAt());
+        if(application.getInfluencer().getImageData()!=null){
+            applicationDTO.setInfluencerImage(Base64.getEncoder().encodeToString(application.getInfluencer().getImageData()));
+        }
+        applicationDTO.setCurrentStatus(application.getCurrentStatus().toString());
+        applicationDTO.setApplicationId(application.getId().toString());
         return applicationDTO;
     }
 
@@ -84,6 +90,9 @@ public class ModelToDTOMapper {
         createdBy.setName(user.getName());
         createdBy.setEmail(user.getEmail());
         createdBy.setId(user.getId());
+        if(user.getImageData()!=null) {
+            createdBy.setImage(Base64.getEncoder().encodeToString(user.getImageData()));
+        }
         dto.setCreatedBy(createdBy);
         //dto.setBudget(post.getBudget());
         dto.setDeadline(post.getDeadline());
@@ -118,17 +127,19 @@ public class ModelToDTOMapper {
         // Convert applications
         List<ApplicationDTO> apps = post.getApplications()
                 .stream()
-                .map(app -> {
-                    ApplicationDTO a = new ApplicationDTO();
-                    a.setPostId(app.getId());
-                    a.setInfluencerId(app.getInfluencer().getId());
-                    a.setPitchMessage(app.getPitchMessage());
-                    return a;
-                })
+                .map(ModelToDTOMapper::getApplicationDTO)
                 .toList();
 
         dto.setApplications(apps);
 
         return dto;
+    }
+
+    public static UserDTO userToUserDTO(User user){
+        UserDTO userDTO=new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setName(user.getName());
+        return userDTO;
     }
 }

@@ -1,28 +1,40 @@
 /* ApplicationTimeline.css
-   Unified stylesheet for the timeline panel used in both
-   CampaignLifecycle (brand) and MyCollaborations (influencer) flows.
+   Unified — CampaignLifecycle (brand) + MyCollaborations (influencer)
 */
 
+/* ─── Container ──────────────────────────────────────── */
 .apptl-container {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 28px;
-  max-height: calc(100vh - 380px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 24px 28px;
+  height: 100%;
+  min-height: 0;
   overflow-y: auto;
+  box-sizing: border-box;
+  position: relative;
 }
 
-.apptl-container::-webkit-scrollbar          { width: 8px; }
-.apptl-container::-webkit-scrollbar-track    { background: #f1f5f9; border-radius: 4px; }
-.apptl-container::-webkit-scrollbar-thumb    { background: #cbd5e1; border-radius: 4px; }
+.apptl-container::-webkit-scrollbar { width: 6px; }
+.apptl-container::-webkit-scrollbar-track  { background: #f1f5f9; border-radius: 3px; }
+.apptl-container::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 3px; }
 .apptl-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ── Empty ────────────────────────────────────────────── */
+/* ─── Page blur overlay (behind dialog, over the rest of the page) ── */
+.apptl-page-blur {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.25);
+  z-index: 998;
+  pointer-events: none;
+}
+
+/* ─── Empty state ────────────────────────────────────── */
 .apptl-empty-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
 }
 
 .apptl-empty {
@@ -34,23 +46,23 @@
   padding: 40px 20px;
 }
 
-.apptl-empty svg       { margin-bottom: 16px; opacity: 0.4; }
-.apptl-empty h3        { font-size: 1.25rem; font-weight: 700; color: #64748b; margin: 0 0 8px; }
-.apptl-empty p         { font-size: 14px; color: #94a3b8; margin: 0; }
+.apptl-empty svg    { margin-bottom: 16px; opacity: 0.35; }
+.apptl-empty h3     { font-size: 1.15rem; font-weight: 700; color: #64748b; margin: 0 0 6px; }
+.apptl-empty p      { font-size: 13px; color: #94a3b8; margin: 0; }
 
-/* ── Campaign header ─────────────────────────────────── */
+/* ─── Campaign header ────────────────────────────────── */
 .apptl-campaign-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding-bottom: 20px;
+  gap: 14px;
+  padding-bottom: 18px;
   border-bottom: 2px solid #f1f5f9;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .apptl-campaign-avatar {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
@@ -60,19 +72,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.28);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.25);
 }
 
-.apptl-campaign-info {
-  flex: 1;
-  min-width: 0;
-}
+.apptl-campaign-info { flex: 1; min-width: 0; }
 
 .apptl-campaign-info h2 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -81,15 +90,15 @@
 .apptl-campaign-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .apptl-meta-item {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 500;
 }
@@ -99,25 +108,25 @@
 .apptl-current-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 9px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
 }
 
 .apptl-btn-message {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 7px 14px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -125,158 +134,72 @@
 }
 
 .apptl-btn-message:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
 }
 
-/* ── Pitch message ───────────────────────────────────── */
+/* ─── Pitch block ────────────────────────────────────── */
 .apptl-pitch {
-  background: linear-gradient(135deg, #eff6ff 0%, #f3e8ff 100%);
-  padding: 16px 20px;
+  background: linear-gradient(135deg, #eff6ff, #f3e8ff);
+  padding: 14px 18px;
   border-radius: 12px;
   border-left: 4px solid #6366f1;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .apptl-pitch-label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #6366f1;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.apptl-pitch p {
-  color: #475569;
-  font-size: 14px;
-  line-height: 1.65;
-  margin: 0;
-}
+.apptl-pitch p { color: #475569; font-size: 13px; line-height: 1.6; margin: 0; }
 
-/* ── Pending actions ─────────────────────────────────── */
-.apptl-pending-actions {
-  background: #fef3c7;
-  padding: 16px 20px;
-  border-radius: 12px;
-  border-left: 4px solid #f59e0b;
-  margin-bottom: 20px;
-}
-
-.apptl-pending-actions h4 {
-  font-size: 15px;
-  font-weight: 700;
-  color: #d97706;
-  margin: 0 0 4px 0;
-}
-
-.apptl-pending-actions p {
-  font-size: 13px;
-  color: #92400e;
-  margin: 0 0 14px 0;
-}
-
-.apptl-action-row {
-  display: flex;
-  gap: 10px;
-}
-
-.apptl-btn-accept,
-.apptl-btn-reject {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.apptl-btn-accept {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.apptl-btn-accept:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.apptl-btn-reject {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-}
-
-.apptl-btn-reject:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-/* ── Status description card ─────────────────────────── */
+/* ─── Status summary card ────────────────────────────── */
 .apptl-status-card {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 12px 16px;
   border-radius: 12px;
   border-left: 4px solid transparent;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
-.apptl-status-card strong {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 3px;
-}
+.apptl-status-card strong { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.apptl-status-card p      { font-size: 12px; color: #475569; margin: 0; line-height: 1.5; }
 
-.apptl-status-card p {
-  font-size: 13px;
-  color: #475569;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* ── Section label ───────────────────────────────────── */
+/* ─── Section label ──────────────────────────────────── */
 .apptl-section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #94a3b8;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
-/* ── Timeline track ──────────────────────────────────── */
-.apptl-track {
-  position: relative;
-  margin-bottom: 24px;
-}
+/* ─── Timeline track ─────────────────────────────────── */
+.apptl-track { position: relative; margin-bottom: 20px; }
 
-.apptl-step {
-  display: flex;
-  gap: 16px;
-  position: relative;
-}
+.apptl-step { display: flex; gap: 14px; position: relative; }
 
 .apptl-connector {
   position: absolute;
-  left: 19px;
-  top: 42px;
+  left: 18px;
+  top: 40px;
   width: 2px;
-  height: calc(100% + 4px);
+  height: calc(100% + 2px);
   z-index: 0;
 }
 
 .apptl-node {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -284,228 +207,379 @@
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   transition: box-shadow 0.3s ease;
 }
 
-.apptl-node-active {
-  animation: apptl-pulse 2.5s ease-in-out infinite;
-}
+.apptl-node-active { animation: apptl-pulse 2.5s ease-in-out infinite; }
 
 @keyframes apptl-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  50%       { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1); }
+  0%,100% { box-shadow: 0 0 0 0 transparent; }
+  50%      { box-shadow: 0 0 0 7px rgba(99,102,241,0.12); }
 }
 
-.apptl-step-body {
-  flex: 1;
-  padding-top: 6px;
-  padding-bottom: 16px;
-}
+.apptl-step-body { flex: 1; padding-top: 5px; padding-bottom: 14px; }
 
 .apptl-step-body-latest {
   background: #fafbff;
-  border: 1px solid #e0e7ff;
+  border: 1.5px solid #e0e7ff;
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 10px 13px;
   margin-bottom: 4px;
 }
 
 .apptl-step-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 7px;
+  margin-bottom: 3px;
   flex-wrap: wrap;
 }
 
-.apptl-step-label {
-  font-size: 14px;
-  font-weight: 700;
-}
+.apptl-step-label { font-size: 13px; font-weight: 700; }
 
 .apptl-now-chip {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   background: #6366f1;
   color: white;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .apptl-step-time {
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .apptl-dot { color: #cbd5e1; }
 
-.apptl-step-desc {
-  font-size: 13px;
-  color: #475569;
-  margin: 6px 0 0 0;
-  line-height: 1.5;
+/* ─── Inline step action buttons ─────────────────────── */
+.apptl-step-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
-/* ── Deliverables ────────────────────────────────────── */
-.apptl-deliverables {
-  margin-bottom: 20px;
+.apptl-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.17s ease;
+  white-space: nowrap;
 }
+
+.apptl-inline-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.apptl-inline-btn-accept  { background: #d1fae5; color: #059669; border-color: #6ee7b7; }
+.apptl-inline-btn-accept:hover:not(:disabled) { background: #059669; color: white; border-color: #059669; }
+
+.apptl-inline-btn-reject  { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+.apptl-inline-btn-reject:hover:not(:disabled) { background: #dc2626; color: white; border-color: #dc2626; }
+
+.apptl-inline-btn-warn    { background: #fef3c7; color: #d97706; border-color: #fcd34d; }
+.apptl-inline-btn-warn:hover:not(:disabled) { background: #d97706; color: white; border-color: #d97706; }
+
+.apptl-inline-btn-info    { background: #e0e7ff; color: #6366f1; border-color: #a5b4fc; }
+.apptl-inline-btn-info:hover:not(:disabled) { background: #6366f1; color: white; border-color: #6366f1; }
+
+.apptl-inline-btn-neutral { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+.apptl-inline-btn-neutral:hover:not(:disabled) { background: #64748b; color: white; border-color: #64748b; }
+
+/* Status badges in last step */
+.apptl-settled-badge,
+.apptl-payment-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.apptl-settled-badge         { background: #d1fae5; color: #059669; }
+.apptl-payment-pending-badge { background: #cffafe; color: #0891b2; }
+
+/* ─── Deliverables display ───────────────────────────── */
+.apptl-deliverables { margin-bottom: 20px; }
 
 .apptl-deliverable-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 9px 13px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 8px;
+  border-radius: 9px;
+  margin-bottom: 7px;
 }
 
 .apptl-deliverable-type {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
   flex: 1;
 }
 
+.apptl-deliverable-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .apptl-deliverable-row a {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #6366f1;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .apptl-deliverable-row a:hover { text-decoration: underline; }
+.apptl-deliverable-date { font-size: 10px; color: #94a3b8; flex-shrink: 0; }
 
-.apptl-deliverable-date { font-size: 11px; color: #94a3b8; }
-
-/* ── Review ──────────────────────────────────────────── */
+/* ─── Review display ─────────────────────────────────── */
 .apptl-review { margin-bottom: 20px; }
 
 .apptl-review-card {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  padding: 16px 20px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  padding: 14px 18px;
   border-radius: 12px;
   border-left: 4px solid #fbbf24;
 }
 
-.apptl-stars { display: flex; gap: 4px; margin-bottom: 10px; }
+.apptl-stars            { display: flex; gap: 3px; margin-bottom: 8px; }
+.apptl-review-card p    { color: #78350f; font-size: 13px; line-height: 1.6; margin: 0 0 6px; }
+.apptl-review-card span { font-size: 11px; color: #92400e; }
 
-.apptl-review-card p  { color: #78350f; font-size: 14px; line-height: 1.6; margin: 0 0 8px 0; }
-.apptl-review-card span { font-size: 12px; color: #92400e; }
-
-/* ── CTA buttons ─────────────────────────────────────── */
-.apptl-cta {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 2px solid #f1f5f9;
-}
-
-.apptl-btn-review,
-.apptl-btn-paid {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.apptl-btn-review {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: white;
-}
-
-.apptl-btn-review:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);
-}
-
-.apptl-btn-paid {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.apptl-btn-paid:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-}
-
-/* ── Modal ───────────────────────────────────────────── */
+/* ─── Modal overlay (z-index above page blur) ────────── */
 .apptl-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 999;
   padding: 20px;
 }
 
 .apptl-modal {
   background: white;
   border-radius: 16px;
-  padding: 28px;
+  padding: 26px 28px;
   max-width: 480px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+  position: relative;
+  z-index: 1000;
 }
 
-.apptl-modal h3 {
-  font-size: 1.3rem;
+.apptl-modal-wide { max-width: 700px; }
+
+.apptl-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.apptl-modal-title-row h3 {
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 20px 0;
+  margin: 0;
 }
 
-.apptl-stars-selector {
+.apptl-modal-header { margin-bottom: 18px; }
+.apptl-modal-header p { font-size: 12px; color: #64748b; margin: 6px 0 0; }
+
+.apptl-resubmit-notice {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  align-items: center;
+  gap: 6px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 8px;
+  margin: 10px 0 4px;
 }
 
-.star-clickable {
-  cursor: pointer;
-  transition: transform 0.15s ease;
+/* ─── Deliverables form (in modal) ──────────────────── */
+.apptl-deliverables-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
-.star-clickable:hover { transform: scale(1.2); }
+.apptl-deliverables-form::-webkit-scrollbar { width: 4px; }
+.apptl-deliverables-form::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
-.apptl-modal textarea {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e2e8f0;
+.apptl-deliverable-form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  font-size: 14px;
+  padding: 11px 13px;
+}
+
+.apptl-form-row-number {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 22px;
+}
+
+.apptl-form-fields { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+
+.apptl-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.apptl-form-field-grow { flex: 1; min-width: 160px; }
+
+.apptl-form-field label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.apptl-optional { font-weight: 400; text-transform: none; color: #94a3b8; letter-spacing: 0; }
+
+.apptl-form-field input,
+.apptl-form-field select {
+  padding: 7px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  background: white;
+  color: #1e293b;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.apptl-form-field input:focus,
+.apptl-form-field select:focus { border-color: #6366f1; }
+
+.apptl-remove-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid #fee2e2;
+  background: #fff5f5;
+  color: #dc2626;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 22px;
+  transition: all 0.15s;
+}
+
+.apptl-remove-row:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+.apptl-add-row-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1.5px dashed #a5b4fc;
+  border-radius: 8px;
+  background: transparent;
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 14px;
+}
+
+.apptl-add-row-btn:hover { background: #e0e7ff; border-color: #6366f1; }
+
+.apptl-form-errors {
+  background: #fee2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: #dc2626;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* ─── Report done state ──────────────────────────────── */
+.apptl-report-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.apptl-report-done h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin: 0; }
+.apptl-report-done p  { font-size: 13px; color: #64748b; margin: 0 0 6px; }
+
+.apptl-report-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
   font-family: inherit;
   resize: vertical;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s;
   box-sizing: border-box;
-}
-
-.apptl-modal textarea:focus {
   outline: none;
-  border-color: #6366f1;
 }
 
+.apptl-report-textarea:focus { border-color: #6366f1; }
+
+/* ─── Modal actions ──────────────────────────────────── */
 .apptl-modal-actions {
   display: flex;
   gap: 10px;
@@ -515,36 +589,49 @@
 .apptl-btn-cancel,
 .apptl-btn-submit {
   flex: 1;
-  padding: 11px 18px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
-}
-
-.apptl-btn-cancel { background: #f1f5f9; color: #64748b; }
-.apptl-btn-cancel:hover { background: #e2e8f0; }
-
-.apptl-btn-submit {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
 }
 
-.apptl-btn-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+.apptl-btn-cancel         { background: #f1f5f9; color: #64748b; }
+.apptl-btn-cancel:hover   { background: #e2e8f0; }
+.apptl-btn-cancel:disabled { opacity: 0.5; }
+
+.apptl-btn-submit {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
 }
 
-/* ── Responsive ──────────────────────────────────────── */
+.apptl-btn-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+
+.apptl-btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Star selector */
+.apptl-stars-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+.star-clickable { cursor: pointer; transition: transform 0.15s; }
+.star-clickable:hover { transform: scale(1.2); }
+
+/* ─── Spinner animation ──────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
+
+/* ─── Responsive ─────────────────────────────────────── */
 @media (max-width: 768px) {
-  .apptl-container        { padding: 20px; max-height: none; }
-  .apptl-campaign-header  { flex-wrap: wrap; }
-  .apptl-action-row       { flex-direction: column; }
-  .apptl-cta              { flex-direction: column; }
+  .apptl-container { padding: 18px; height: auto; }
+  .apptl-campaign-header { flex-wrap: wrap; }
+  .apptl-modal-wide { max-width: 100%; }
+  .apptl-form-fields { flex-direction: column; }
+  .apptl-form-field-grow { min-width: unset; }
 }

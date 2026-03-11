@@ -205,8 +205,8 @@ const Home: React.FC = () => {
     <div className="main-content">
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Premium Brand <span className="gradient-text">Partnerships</span></h1>
-          <p className="hero-subtitle">Discover exclusive collaboration opportunities with top-tier brands and creators</p>
+          <h1 className="hero-title">Connect Brands with <span className="gradient-text">Influencers</span></h1>
+          <p className="hero-subtitle">InfluenceX helps small brands discover the right influencers.</p>
         </div>
       </div>
 

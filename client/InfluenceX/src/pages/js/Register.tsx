@@ -117,11 +117,11 @@ export default function Register() {
         </div>
         <div className="auth-left-copy">
           <h1>Start your<br/>story today.</h1>
-          <p>Join thousands of creators and brands already building together on InfluenceX.</p>
+          <p>Whether you're a growing creator or a small brand looking for visibility, InfluenceX helps you collaborate and grow together.</p>
         </div>
         <div className="auth-features">
           {[
-            { icon: '⚡', text: 'Instant campaign matching' },
+            { icon: '⚡', text: 'Promote or Collaborate' },
             { icon: '🔒', text: 'Secure payments via Razorpay' },
             { icon: '📊', text: 'Real-time collaboration tracking' },
           ].map((f, i) => (
@@ -145,14 +145,14 @@ export default function Register() {
             <>
               <div className="auth-card-head">
                 <h2>Create account</h2>
-                <p>Get started for free — no credit card required</p>
+                <p>Get started if you're a growing creator or a small brand looking for visibility</p>
               </div>
 
               <form onSubmit={handleRegister} noValidate>
                 <div className="auth-field">
                   <label>Full name</label>
                   <input type="text" autoComplete="name" value={name}
-                    onChange={e => setName(e.target.value)} required placeholder="Jane Smith" />
+                    onChange={e => setName(e.target.value)} required placeholder="Full name" />
                 </div>
 
                 <div className="auth-field">

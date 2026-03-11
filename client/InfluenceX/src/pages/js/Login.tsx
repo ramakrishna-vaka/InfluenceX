@@ -48,7 +48,7 @@ export default function Login() {
       const whoRes = await fetch('http://localhost:8080/whoAmI', { credentials: 'include' });
       if (!whoRes.ok) { setError('Could not fetch user info.'); return; }
       const data = await whoRes.json();
-      setAuthUser({ id: data.id, name: data.name, email: data.email });
+      setAuthUser({ id: data.id, name: data.name, email: data.email, imageData: data.imageData, rating: data.rating, walletMoney: data.walletMoney });
       login();
       navigate('/');
     } catch {

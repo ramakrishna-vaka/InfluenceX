@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.project.InfluenceX.model.ResponseDTO.ProfileResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
 import com.project.InfluenceX.model.LoginDTO;
 import com.project.InfluenceX.model.User;
@@ -18,8 +19,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
@@ -107,7 +108,62 @@ public class LoginController {
         // Step 4: Hide password before sending to frontend
         user.setPassword(null);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(mapToProfileResponse(user));
+    }
+
+    private ProfileResponseDTO mapToProfileResponse(User user) {
+        ProfileResponseDTO response = new ProfileResponseDTO();
+
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
+        response.setPhone(user.getPhoneNumber());
+        response.setLocation(user.getLocation());
+        response.setBio(user.getBio());
+        //response.setUsername(user.getUsername());
+        //response.setVerified(user.isVerified());
+        response.setCreatedAt(user.getCreatedAt());
+
+        // Phone verified status (in production, this would come from a separate verification table)
+        response.setPhoneVerified(user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty());
+
+        // Convert image data to base64 if present
+        if (user.getImageData() != null && user.getImageData().length > 0) {
+            String base64Image = Base64.getEncoder().encodeToString(user.getImageData());
+            response.setAvatar("data:image/jpeg;base64," + base64Image);
+        }
+
+        response.setPreferredCategories(user.getPreferredCategory());
+        response.setLanguagesKnown(user.getLanguagesKnown());
+
+        // Map social media profiles
+//        if (user.getSocialMediaProfiles() != null) {
+//            List<SocialMediaProfileDTO> socialProfiles = user.getSocialMediaProfiles().stream()
+//                    .map(this::mapToSocialMediaDTO)
+//                    .collect(Collectors.toList());
+//            response.setSocialMediaProfiles(socialProfiles);
+//        } else {
+//            response.setSocialMediaProfiles(new ArrayList<>());
+//        }
+
+        // Map stats
+        //response.setStats(buildStats(user));
+
+        // Map posts
+//        if (user.getPostsCreated() != null) {
+//            List<ProfileResponseDTO.PostSummaryDTO> posts = user.getPostsCreated().stream()
+//                    .limit(10) // Limit to recent 10 posts
+//                    .map(this::mapToPostSummary)
+//                    .collect(Collectors.toList());
+//            response.setCreatedPosts(posts);
+//        } else {
+//            response.setCreatedPosts(new ArrayList<>());
+//        }
+
+        // Map collaborations (TODO: implement when collaboration entity is ready)
+        response.setCollaborations(new ArrayList<>());
+
+        return response;
     }
 
     @PostMapping("/auth/google")

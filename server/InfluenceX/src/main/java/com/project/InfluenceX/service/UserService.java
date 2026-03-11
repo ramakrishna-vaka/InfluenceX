@@ -45,6 +45,9 @@ public class UserService {
         userCreated.setName(userDTO.getName());
         userCreated.setPassword(encoder.encode(userDTO.getPassword()));
         userCreated.setEmail(userDTO.getEmail());
+        userCreated.setCreatedAt(java.time.LocalDateTime.now());
+        userCreated.setTotalEarnings(50);
+        userCreated.setWalletMoney(50);
         userRepository.save(userCreated);
         return userCreated;
     }
@@ -87,6 +90,30 @@ public class UserService {
     }
 
     public void registerGoogleUser(User user){
+        userRepository.save(user);
+    }
+
+    // ─── Add these methods to UserService.java ────────────────────────────────────
+
+    /**
+     * Mark user's email as verified.
+     * Add `emailVerified` boolean field to User entity first.
+     */
+//    public void markEmailVerified(String email) {
+//        User user = userRepository.findByEmail(email);
+//        if (user != null) {
+//            user.setEmailVerified(true);
+//            userRepository.save(user);
+//        }
+//    }
+
+    /**
+     * Reset a user's password — encodes with BCrypt.
+     */
+    public void resetPassword(String email, String newRawPassword) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new RuntimeException("User not found");
+        user.setPassword(passwordEncoder().encode(newRawPassword));
         userRepository.save(user);
     }
 

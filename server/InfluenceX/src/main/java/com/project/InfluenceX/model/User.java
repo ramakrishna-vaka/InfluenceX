@@ -87,6 +87,9 @@ public class User {
     private int totalCollaborations = 0;
 
     @Column
+    private double walletMoney = 0.0;
+
+    @Column
     private double totalEarnings = 0.0;
 
     // -------- ACCOUNT STATUS --------
@@ -219,6 +222,14 @@ public class User {
     }
     public String getAddress(){
         return address;
+    }
+
+    public double getWalletMoney(){
+        return walletMoney;
+    }
+
+    public void setWalletMoney(double walletMoney){
+        this.walletMoney=walletMoney;
     }
 
 

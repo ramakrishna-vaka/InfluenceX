@@ -54,6 +54,9 @@ dependencies {
 	//Razor pay
 	implementation 'com.razorpay:razorpay-java:1.4.4'
 
+	//email
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 }
 
 tasks.named('test') {

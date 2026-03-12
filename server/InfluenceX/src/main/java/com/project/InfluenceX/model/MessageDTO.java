@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class MessageDTO {
     private Long id;
-    private User sender;
-    private User receiver;
+    private UserDTO sender;
+    private UserDTO receiver;
     private String content;
     private LocalDateTime timestamp;
     private Boolean isReadBy;
@@ -17,11 +17,11 @@ public class MessageDTO {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public User getSender() { return sender; }
-    public void setSender(User sender) { this.sender = sender; }
+    public UserDTO getSender() { return sender; }
+    public void setSender(UserDTO sender) { this.sender = sender; }
 
-    public User getReceiver() { return receiver; }
-    public void setReceiver(User receiver) { this.receiver = receiver; }
+    public UserDTO getReceiver() { return receiver; }
+    public void setReceiver(UserDTO receiver) { this.receiver = receiver; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }

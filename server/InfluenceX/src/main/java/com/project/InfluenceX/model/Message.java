@@ -33,12 +33,13 @@ public class Message {
     }
 
 
-    public Message(User sender, User receiver, String content) {
+    public Message(User sender, User receiver, String content,Chat chatId) {
         this.sender = sender;
         this.receiver = receiver;
         this.content = content;
         this.timestamp = LocalDateTime.now();
         this.isReadBy=false;
+        this.chatId=chatId;
     }
 
     // Getters & Setters
@@ -59,4 +60,8 @@ public class Message {
 
     public boolean getIsReadBy() { return isReadBy; }
     public void setIsReadBy(boolean isReadBy){ this.isReadBy=isReadBy; }
+
+    public void setChatId(Chat chatId) {
+        this.chatId = chatId;
+    }
 }

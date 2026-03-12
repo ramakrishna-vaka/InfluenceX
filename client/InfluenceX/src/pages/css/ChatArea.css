@@ -6,6 +6,7 @@
   height: 100%;
   background: #ffffff;
   position: relative;
+  overflow: hidden; /* Contain scroll within chat area */
 }
 
 /* ============================================
@@ -303,9 +304,11 @@
 .messages-viewport {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px 32px;
   background: linear-gradient(180deg, #fafbfc 0%, #f9fafb 100%);
   scroll-behavior: smooth;
+  min-height: 0; /* Important for flex children to scroll properly */
 }
 
 .loading-messages {
@@ -684,25 +687,38 @@
 }
 
 /* ============================================
-   SCROLLBAR
+   SCROLLBAR - CHAT MESSAGES (Telegram/Messenger style)
    ============================================ */
 .messages-viewport::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .messages-viewport::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 5px;
+  margin: 8px 0;
 }
 
 .messages-viewport::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  background: linear-gradient(180deg, #9ca3af 0%, #6b7280 100%);
+  border-radius: 5px;
+  border: 2px solid #f9fafb;
+  transition: all 0.2s ease;
 }
 
 .messages-viewport::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+  border-color: #f3f4f6;
+}
+
+.messages-viewport::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
+}
+
+/* Firefox support */
+.messages-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f9fafb;
 }
 
 /* ============================================

@@ -6,6 +6,9 @@ import com.project.InfluenceX.repository.ChatRepository;
 import com.project.InfluenceX.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class MessageService {
 
@@ -24,6 +27,13 @@ public class MessageService {
         if ("BLOCKED".equals(chat.getStatus())) {
             throw new RuntimeException("Chat is blocked by brand.");
         }
-        return messageRepository.save(message);
+        message.setChatId(chat);
+        messageRepository.save(message);
+        List<Message> messagesList= chat.getMessageList();
+        messagesList.add(message);
+        chat.setMessageList(messagesList);
+        chatRepository.save(chat);
+        return message;
+
     }
 }

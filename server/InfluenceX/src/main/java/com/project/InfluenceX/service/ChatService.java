@@ -2,6 +2,8 @@ package com.project.InfluenceX.service;
 
 import com.project.InfluenceX.model.*;
 import com.project.InfluenceX.repository.ChatRepository;
+import com.project.InfluenceX.repository.MessageRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -9,13 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.project.InfluenceX.Utils.ModelToDTOMapper.userToUserDTO;
+
 @Service
 public class ChatService {
 
     private final ChatRepository chatRepository;
+    private SimpMessagingTemplate messagingTemplate;
+    private MessageRepository messageRepository;
 
-    public ChatService(ChatRepository chatRepository) {
+    public ChatService(ChatRepository chatRepository,SimpMessagingTemplate simpMessagingTemplate,MessageRepository messageRepository) {
         this.chatRepository = chatRepository;
+        this.messagingTemplate=simpMessagingTemplate;
+        this.messageRepository=messageRepository;
     }
 
     public Chat saveMessage(Chat Chat) {
@@ -43,8 +51,8 @@ public class ChatService {
 //                    ? chat.getBrand()
 //                    : chat.getInfluencer();
 
-            dto.setBrand(chat.getBrand());
-            dto.setInfluencer(chat.getInfluencer());
+            dto.setBrand(userToUserDTO(chat.getBrand()));
+            dto.setInfluencer(userToUserDTO(chat.getInfluencer()));
 
             // Step 3: Last message time
             LocalDateTime lastMessageTime = chat.getMessageList()
@@ -86,9 +94,36 @@ public class ChatService {
         return chatRepository.findAll();
     }
 
-    public void createChat(User brand, User influencer, Message message){
-        Chat chat=new Chat(brand,influencer,message);
+    public void createChat(User brand, User influencer, String content){
+        Chat chat=chatRepository.findByInfluencerAndBrand(influencer,brand);
+        if(chat==null){
+            chat=new Chat(brand,influencer);
+            chatRepository.save(chat);
+        }
+        Message message=new Message(brand,influencer,content,chat);
+        messageRepository.save(message);
+        List<Message> messageList=chat.getMessageList();
+        if(messageList==null){
+            messageList=new ArrayList<>();
+        }
+        messageList.add(message);
+        chat.setMessageList(messageList);
         chatRepository.save(chat);
+
+
+
+        ChatResponseDTO chatResponseDTO=convertToChatResponseDTO(chat);
+        // Notify BRAND
+        messagingTemplate.convertAndSend(
+                "/topic/chats/" + brand.getId(),
+                chatResponseDTO
+        );
+
+        // Notify INFLUENCER
+        messagingTemplate.convertAndSend(
+                "/topic/chats/" + influencer.getId(),
+                chatResponseDTO
+        );
     }
 
     public Chat approveChat(Long chatId) {
@@ -143,8 +178,8 @@ public class ChatService {
         dto.setContent(message.getContent());
         dto.setTimestamp(message.getTimestamp());
         dto.setIsReadBy(message.getIsReadBy());
-        dto.setSender(message.getSender());
-        dto.setReceiver(message.getReceiver());
+        dto.setSender(userToUserDTO(message.getSender()));
+        dto.setReceiver(userToUserDTO(message.getReceiver()));
         return dto;
     }
 

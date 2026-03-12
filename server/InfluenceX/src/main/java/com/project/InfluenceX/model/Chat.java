@@ -39,6 +39,13 @@ public class Chat {
         this.status="Pending";
     }
 
+    public Chat(User brand,User influencer){
+        this.brand=brand;
+        this.influencer=influencer;
+        this.createdAt=LocalDateTime.now();
+        this.status="Pending";
+    }
+
     public String getStatus(){ return this.status;}
 
     public User getInfluencer(){ return this.influencer; }

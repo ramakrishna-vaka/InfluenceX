@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class ChatController {
     // WebSocket endpoint for sending messages
     @MessageMapping("/chat/{chatId}")
     @SendTo("/topic/chat/{chatId}")
+    @Transactional
     public Message sendToChat(@DestinationVariable Long chatId, Message message) {
         return messageService.sendToChat(chatId, message);
     }

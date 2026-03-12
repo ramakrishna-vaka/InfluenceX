@@ -5,8 +5,8 @@ import java.util.List;
 
 public class ChatResponseDTO {
     private Long id;
-    private User brand;
-    private User influencer;
+    private UserDTO brand;
+    private UserDTO influencer;
     private String status;
     private LocalDateTime createdAt;
     private List<MessageDTO> messageList;
@@ -21,11 +21,11 @@ public class ChatResponseDTO {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public User getBrand() { return brand; }
-    public void setBrand(User brand) { this.brand = brand; }
+    public UserDTO getBrand() { return brand; }
+    public void setBrand(UserDTO brand) { this.brand = brand; }
 
-    public User getInfluencer() { return influencer; }
-    public void setInfluencer(User influencer) { this.influencer = influencer; }
+    public UserDTO getInfluencer() { return influencer; }
+    public void setInfluencer(UserDTO influencer) { this.influencer = influencer; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

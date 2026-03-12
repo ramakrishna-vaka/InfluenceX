@@ -68,14 +68,29 @@ const Messages: React.FC = () => {
     
     stompClientRef.current = stompClient;
 
-    stompClient.connect({}, 
-      () => {
-        console.log("✅ Connected to WebSocket");
-      },
-      (error: any) => {
-        console.error("❌ WebSocket connection error:", error);
-      }
-    );
+   stompClient.connect({}, 
+    () => {
+      console.log("✅ Connected to WebSocket");
+
+      // 🔔 Subscribe to NEW CHAT events for this user
+      stompClient.subscribe(
+        `/topic/chats/${authUser.id}`,
+        (message: any) => {
+          const newChat = JSON.parse(message.body);
+          console.log("🆕 New chat received:", newChat);
+
+          setChats(prev => {
+            const exists = prev.some(c => c.id === newChat.id);
+            return exists ? prev : [newChat, ...prev];
+          });
+        }
+      );
+    },
+    (error: any) => {
+      console.error("❌ WebSocket connection error:", error);
+    }
+  );
+
 
     return () => {
       if (subscriptionRef.current) {

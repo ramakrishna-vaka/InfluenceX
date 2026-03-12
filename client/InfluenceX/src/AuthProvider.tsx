@@ -13,8 +13,9 @@ type AuthUser = {
     id: number;
     email: string;
     name: string;
-    imageData?: string | null;
+    avatar?: string | null;
     rating?: number;
+    walletMoney?: number;
 } | null;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

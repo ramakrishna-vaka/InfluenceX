@@ -92,6 +92,10 @@ public class User {
     @Column
     private double totalEarnings = 0.0;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private List<WalletTransaction> walletTransactions;
+
     // -------- ACCOUNT STATUS --------
 
     @Column
@@ -232,5 +236,10 @@ public class User {
         this.walletMoney=walletMoney;
     }
 
+    public List<WalletTransaction> getWalletTransactions() { return walletTransactions; }
+
+    public void setWalletTransactions(List<WalletTransaction> walletTransactions) {
+        this.walletTransactions = walletTransactions;
+    }
 
 }

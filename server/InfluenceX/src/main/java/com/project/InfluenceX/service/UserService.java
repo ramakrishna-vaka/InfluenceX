@@ -14,11 +14,13 @@ import java.util.List;
 
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
+    private final NotificationsService notificationsService;
 
-
-    public UserService(UserRepository userRepository)
+    public UserService(UserRepository userRepository,NotificationsService notificationsService)
     {
+        this.notificationsService=notificationsService;
         this.userRepository = userRepository;
     }
 
@@ -49,6 +51,13 @@ public class UserService {
         userCreated.setTotalEarnings(50);
         userCreated.setWalletMoney(50);
         userRepository.save(userCreated);
+
+        //create this as a notification
+        notificationsService.createNotification(
+                user,
+                "₹50 has been credited to your account as a registration bonus."
+        );
+
         return userCreated;
     }
 

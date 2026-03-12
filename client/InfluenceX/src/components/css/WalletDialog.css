@@ -1,0 +1,429 @@
+/* WalletDialog.css */
+
+.wd-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+  z-index: 998;
+  animation: wd-fade-in 0.2s ease;
+}
+
+@keyframes wd-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+.wd-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  background: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  box-shadow: -12px 0 40px rgba(15, 23, 42, 0.12);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: wd-slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes wd-slide-in {
+  from { transform: translateX(100%); opacity: 0.6; }
+  to   { transform: translateX(0);    opacity: 1;   }
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.wd-header {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.wd-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.wd-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 4px;
+  display: flex;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.wd-close:hover { color: #0f172a; background: #f1f5f9; }
+
+.wd-close-abs { margin-left: auto; }
+
+.wd-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  gap: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.wd-back:hover { color: #0f172a; background: #f1f5f9; }
+
+/* ── Scrollable body ───────────────────────────────────────────────────── */
+.wd-panel > *:not(.wd-header):not(.wd-success) {
+  flex-shrink: 0;
+}
+
+.wd-txn-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ── Balance card ──────────────────────────────────────────────────────── */
+.wd-balance-card {
+  margin: 20px 20px 0;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 60%, #818cf8 100%);
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.wd-card-shimmer {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wd-balance-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+
+.wd-balance-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.wd-balance-sub {
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+/* ── Withdraw row ──────────────────────────────────────────────────────── */
+.wd-withdraw-row {
+  padding: 14px 20px 0;
+  flex-shrink: 0;
+}
+
+.wd-btn-withdraw {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  justify-content: center;
+}
+.wd-btn-withdraw:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+
+.wd-min-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 9px 14px;
+}
+
+/* ── Transaction section ───────────────────────────────────────────────── */
+.wd-txn-label {
+  padding: 18px 20px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.wd-txn-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.12s;
+  cursor: default;
+}
+.wd-txn-item:hover { background: #fafafa; }
+.wd-txn-item:last-child { border-bottom: none; }
+
+.wd-txn-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wd-txn-credit .wd-txn-icon { background: #dcfce7; color: #16a34a; }
+.wd-txn-debit  .wd-txn-icon { background: #fee2e2; color: #dc2626; }
+
+.wd-txn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.wd-txn-desc {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wd-txn-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.wd-txn-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.wd-txn-credit .wd-txn-amount { color: #16a34a; }
+.wd-txn-debit  .wd-txn-amount { color: #dc2626; }
+
+.wd-txn-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 20px;
+  color: #cbd5e1;
+}
+.wd-txn-empty p {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* ── Balance pill (withdraw screen) ───────────────────────────────────── */
+.wd-balance-pill {
+  margin: 16px 20px 4px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.wd-balance-pill strong { color: #4f46e5; }
+
+/* ── Form ──────────────────────────────────────────────────────────────── */
+.wd-form {
+  padding: 8px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wd-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.01em;
+}
+
+.wd-field input {
+  padding: 10px 13px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: white;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.wd-field input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.wd-field input::placeholder { color: #cbd5e1; }
+
+.wd-input-wrap { position: relative; }
+.wd-input-wrap input { padding-left: 34px; }
+.wd-input-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.wd-btn-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 12px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+.wd-btn-confirm:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+  transform: translateY(-1px);
+}
+.wd-btn-confirm:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── Error banner ──────────────────────────────────────────────────────── */
+.wd-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  margin: 12px 20px 0;
+}
+
+/* ── Loading ───────────────────────────────────────────────────────────── */
+.wd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.wd-spin {
+  animation: wd-spin-anim 0.8s linear infinite;
+}
+@keyframes wd-spin-anim { to { transform: rotate(360deg); } }
+
+/* ── Success screen ────────────────────────────────────────────────────── */
+.wd-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 36px;
+  gap: 14px;
+  flex: 1;
+  position: relative;
+}
+
+.wd-success-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #dcfce7;
+  border: 3px solid #86efac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16a34a;
+  margin-bottom: 6px;
+  animation: wd-pop 0.45s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes wd-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.wd-success h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.wd-success p {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 260px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .wd-panel { width: 100vw; }
+}

@@ -27,6 +27,8 @@ public class ProfileResponseDTO {
     private LocalDateTime updatedAt;
     private List<String> preferredCategories;
     private List<String> languagesKnown;
+    private String walletMoney;
+    private String totalEarnings;
 
 
     // Inner class for stats
@@ -277,4 +279,21 @@ public class ProfileResponseDTO {
     public void setLanguagesKnown(List<String> languagesKnown){
         this.languagesKnown=languagesKnown;
     }
+
+    public void setWalletMoney(String walletMoney){
+        this.walletMoney=walletMoney;
+    }
+
+    public void setTotalEarnings(String totalEarnings){
+        this.totalEarnings=totalEarnings;
+    }
+
+    public String getWalletMoney(){
+        return walletMoney;
+    }
+
+    public String getTotalEarnings(){
+        return totalEarnings;
+    }
+
 }

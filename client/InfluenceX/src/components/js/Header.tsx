@@ -10,7 +10,8 @@ import {
   Zap,
   Filter,
   SortDesc,
-  Megaphone
+  Megaphone,
+  Wallet
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './../css/Header.css';
@@ -19,6 +20,7 @@ import CreateCampaignDialog from './CreateCampaignDialog';
 import { useCampaignFilter } from '../../CampaignFilterContext';
 import type { FilterState } from '../../CampaignFilterContext';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import WalletDialog from './WalletDialog';
 
 interface HeaderProps {
   onToggleNavbar: (pathname:string) => void;
@@ -37,6 +39,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   
   const [isOpen, setIsOpen] = useState(false);
+
+  const [showWallet, setShowWallet] = useState(false);   // ← wallet
+  
   const close = () => { setIsOpen(false); }
   
   const { searchQuery, sortBy, filters,setSearchQuery,setFilters, setSortBy,clearAllFilters } = useCampaignFilter();
@@ -215,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     name: authUser?.name || "John Doe",
     role: "influencer",
     email: authUser?.email || "john@example.com",
-    imageData: authUser?.imageData || null
+    avatar: authUser?.avatar || null
   };
 
   const handleSearch = useCallback((e:any) => {
@@ -437,6 +442,12 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
             <span>Create</span>
           </button>
           <CreateCampaignDialog isOpen={isOpen} onClose={close} userId={authUser?.id} />
+          
+          <button className="wallet-btn" onClick={() => setShowWallet(true)}
+            title="My Wallet" aria-label="Open wallet">
+            <Wallet size={20} />
+          </button>
+          <WalletDialog isOpen={showWallet} onClose={() => setShowWallet(false)} />
 {/* Notifications */}
           <div className="notification-wrapper">
             <button 
@@ -485,9 +496,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="user-avatar">
-                {user.imageData ? (
+                {user.avatar ? (
                    <img 
-                        src={`data:image/*;base64,${user.imageData}`} 
+                        src={user.avatar} 
                         alt="User Avatar"
                       />
                 ) : (
@@ -504,9 +515,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               <div className="user-dropdown">
                 <div className="user-dropdown-header">
                   <div className="user-avatar large">
-                    {user.imageData ? (
+                    {user.avatar ? (
                        <img 
-                        src={`data:image/*;base64,${user.imageData}`} 
+                        src={user.avatar} 
                         alt="User Avatar"
                       />
                     ) : (

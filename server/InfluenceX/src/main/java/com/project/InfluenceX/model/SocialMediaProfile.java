@@ -45,6 +45,12 @@ public class SocialMediaProfile {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Column(length = 2000)
+    private String accessToken;
+
+    @Column(name = "platform_user_id", nullable = false)
+    private String platformUserId;
+
     // -------- CONSTRUCTORS --------
 
     public SocialMediaProfile() {}
@@ -135,5 +141,17 @@ public class SocialMediaProfile {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void setAccessToken(String accessToken){
+        this.accessToken=accessToken;
+    }
+
+    public String getPlatformUserId() {
+        return platformUserId;
+    }
+
+    public void setPlatformUserId(String platformUserId) {
+        this.platformUserId = platformUserId;
     }
 }

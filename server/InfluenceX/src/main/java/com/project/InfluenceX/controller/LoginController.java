@@ -162,7 +162,8 @@ public class LoginController {
 
         // Map collaborations (TODO: implement when collaboration entity is ready)
         response.setCollaborations(new ArrayList<>());
-
+        response.setWalletMoney(String.valueOf(user.getWalletMoney()));
+        response.setTotalEarnings(String.valueOf(user.getTotalEarnings()));
         return response;
     }
 

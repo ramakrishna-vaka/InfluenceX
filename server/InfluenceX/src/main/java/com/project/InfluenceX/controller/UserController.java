@@ -3,10 +3,12 @@ package com.project.InfluenceX.controller;
 import com.project.InfluenceX.model.User;
 import com.project.InfluenceX.model.UserDTO;
 import com.project.InfluenceX.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -37,8 +39,13 @@ public class UserController {
     }
 
     @PostMapping("/register/user")
-    public User createUser(@RequestBody UserDTO userDTO)
-    {
-        return userService.createUser(userDTO);
+    public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
+        try {
+            User user = userService.createUser(userDTO);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 }

@@ -96,6 +96,12 @@ public class User {
     @OrderBy("createdAt DESC")
     private List<WalletTransaction> walletTransactions;
 
+    @Column
+    private String authProvider = "LOCAL"; // "LOCAL" or "GOOGLE"
+
+    public String getAuthProvider() { return authProvider; }
+    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
+
     // -------- ACCOUNT STATUS --------
 
     @Column

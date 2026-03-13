@@ -24,41 +24,55 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User authenticateUser(String email,String password){
-        User user = userRepository.findByEmail(email);
-        if (user != null && passwordEncoder().matches(password, user.getPassword())) {
-            return user;
-        }
-        return null;
-    }
-
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    public User createUser(UserDTO userDTO)
-    {
-        User user=userRepository.findByEmail(userDTO.getEmail());
-        if(user!=null){
-            System.out.println("Account already exists,Please login");
-        }
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        User userCreated=new User();
-        userCreated.setName(userDTO.getName());
-        userCreated.setPassword(encoder.encode(userDTO.getPassword()));
-        userCreated.setEmail(userDTO.getEmail());
-        userCreated.setCreatedAt(java.time.LocalDateTime.now());
-        userCreated.setTotalEarnings(50);
-        userCreated.setWalletMoney(50);
-        userRepository.save(userCreated);
+    public User createUser(UserDTO userDTO) {
+        User existing = userRepository.findByEmail(userDTO.getEmail());
 
-        //create this as a notification
+        if (existing != null) {
+            if ("GOOGLE".equals(existing.getAuthProvider())) {
+                throw new RuntimeException("This email is registered via Google. Please login with Google.");
+            }
+            throw new RuntimeException("Account already exists. Please login.");
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        User user = new User();
+        user.setName(userDTO.getName());
+        user.setPassword(encoder.encode(userDTO.getPassword()));
+        user.setEmail(userDTO.getEmail());
+        user.setAuthProvider("LOCAL");
+        user.setCreatedAt(java.time.LocalDateTime.now());
+        User savedUser =userRepository.save(user);
+
+        addRegisterBonus(savedUser);
+
+        return savedUser;
+    }
+
+    public void addRegisterBonus(User user){
+        user.setWalletMoney(50);
+        user.setTotalEarnings(50);
         notificationsService.createNotification(
                 user,
                 "₹50 has been credited to your account as a registration bonus."
         );
+    }
 
-        return userCreated;
+    public User authenticateUser(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("No account found with this email.");
+        }
+        if ("GOOGLE".equals(user.getAuthProvider())) {
+            throw new RuntimeException("This account uses Google login. Please sign in with Google.");
+        }
+        if (!passwordEncoder().matches(password, user.getPassword())) {
+            throw new RuntimeException("Incorrect password.");
+        }
+        return user;
     }
 
     public ResponseEntity<? extends Object> loginUser(UserDTO userDTO)

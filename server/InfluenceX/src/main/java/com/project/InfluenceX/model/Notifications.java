@@ -15,7 +15,7 @@ public class Notifications {
     private boolean readBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "NotifiedUser", nullable = false)
+    @JoinColumn(name = "notified_user", nullable = false)
     @JsonIgnore
     private User user;
 

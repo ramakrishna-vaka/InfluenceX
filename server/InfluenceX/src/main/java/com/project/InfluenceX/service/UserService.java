@@ -45,11 +45,15 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setAuthProvider("LOCAL");
         user.setCreatedAt(java.time.LocalDateTime.now());
-        User savedUser =userRepository.save(user);
+        User savedUser =saveUser(user);
 
         addRegisterBonus(savedUser);
 
         return savedUser;
+    }
+
+    public User saveUser(User user){
+        return userRepository.save(user);
     }
 
     public void addRegisterBonus(User user){

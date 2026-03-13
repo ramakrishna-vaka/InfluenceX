@@ -55,7 +55,7 @@ dependencies {
 	implementation 'com.razorpay:razorpay-java:1.4.4'
 
 	//email
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'com.sendgrid:sendgrid-java:4.10.1'
 
 }
 

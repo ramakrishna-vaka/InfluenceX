@@ -39,6 +39,7 @@ import '../css/Profile.css';
 import { useAuth } from '../../AuthProvider.tsx';
 
 const Profile = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { userId } = useParams();
   const navigate = useNavigate();
   const { authUser } = useAuth();
@@ -103,7 +104,7 @@ const Profile = () => {
         setLoading(true);
         const targetUserId = userId || currentUserId;
         
-        const response = await fetch(`http://localhost:8080/api/profile/${targetUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/profile/${targetUserId}`, {
           credentials: 'include'
         });
         
@@ -229,7 +230,7 @@ const Profile = () => {
         formData.append('avatar', avatarFile);
       }
 
-      const response = await fetch(`http://localhost:8080/api/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile`, {
         method: 'PUT',
         credentials: 'include',
         body: formData
@@ -300,7 +301,7 @@ const Profile = () => {
         formData.append('preferredCategories', JSON.stringify(editForm.preferredCategories));
       }
 
-      const response = await fetch(`http://localhost:8080/api/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile`, {
         method: 'PUT',
         credentials: 'include',
         body: formData
@@ -336,7 +337,7 @@ const Profile = () => {
     if (!isOwnProfile || !editForm.phone) return;
     
     try {
-      const response = await fetch(`http://localhost:8080/api/profile/verify-phone`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile/verify-phone`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -368,7 +369,7 @@ const Profile = () => {
     try {
       setVerifyingOtp(true);
       
-      const response = await fetch(`http://localhost:8080/api/profile/verify-phone`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile/verify-phone`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -476,7 +477,7 @@ const Profile = () => {
     
     setConnectingPlatform(platform);
     
-    const oauthUrl = `http://localhost:8080/api/auth/oauth/${platform.toLowerCase()}`;
+    const oauthUrl = `${API_BASE_URL}/api/auth/oauth/${platform.toLowerCase()}`;
     window.location.href = oauthUrl;
   };
 
@@ -488,7 +489,7 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/profile/social/${platform.toLowerCase()}`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile/social/${platform.toLowerCase()}`, {
         method: 'DELETE',
         credentials: 'include'
       });

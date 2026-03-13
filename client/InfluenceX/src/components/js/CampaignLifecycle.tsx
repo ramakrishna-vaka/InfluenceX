@@ -48,6 +48,7 @@ interface ApplicationLifecycle {
 }
 
 const CampaignLifecycle: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { campaignId } = useParams<{ campaignId: string }>();
   const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -63,7 +64,7 @@ const CampaignLifecycle: React.FC = () => {
   const fetchCampaignData = async () => {
     try {
       setLoading(true);
-      const campaignResponse = await fetch(`http://localhost:8080/posts/${campaignId}`, {
+      const campaignResponse = await fetch(`${API_BASE_URL}/posts/${campaignId}`, {
         credentials: 'include'
       });
       const campaignData = await campaignResponse.json();

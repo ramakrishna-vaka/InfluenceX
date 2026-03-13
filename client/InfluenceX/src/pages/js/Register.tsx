@@ -21,6 +21,7 @@ const strengthLabel = ['Too short', 'Weak', 'Fair', 'Good', 'Strong'];
 const strengthColor = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#059669'];
 
 export default function Register() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
 
   const [step, setStep]           = useState<Step>('form');
@@ -41,7 +42,7 @@ export default function Register() {
     if (pwStr < 2) { setError('Please choose a stronger password.'); return; }
     setError(''); setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/register/user', {
+      const res = await fetch(`${API_BASE_URL}/register/user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
@@ -51,7 +52,7 @@ export default function Register() {
         setError(msg || 'Registration failed.'); return;
       }
       // Now send OTP
-      await fetch('http://localhost:8080/auth/otp/send', {
+      await fetch(`${API_BASE_URL}/auth/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -68,7 +69,7 @@ export default function Register() {
     if (otp.length !== 6) { setError('Enter the 6-digit code.'); return; }
     setError(''); setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/auth/otp/verify', {
+      const res = await fetch(`${API_BASE_URL}/auth/otp/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
@@ -83,7 +84,7 @@ export default function Register() {
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     setError('');
-    await fetch('http://localhost:8080/auth/otp/send', {
+    await fetch(`${API_BASE_URL}/auth/otp/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),

@@ -31,6 +31,7 @@ interface Chat {
 }
 
 const Messages: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { authUser } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const Messages: React.FC = () => {
     if (!authUser?.id) return;
 
     console.log("Initializing WebSocket connection...");
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS(`${API_BASE_URL}/ws`);
     const stompClient = Stomp.over(socket);
     
     // Disable debug logs (optional)
@@ -213,7 +214,7 @@ const Messages: React.FC = () => {
   const fetchChats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/getChats/${authUser?.id}`, { 
+      const response = await fetch(`${API_BASE_URL}/getChats/${authUser?.id}`, { 
         credentials: 'include' 
       });
       
@@ -234,7 +235,7 @@ const Messages: React.FC = () => {
   const handleInitialChatSelection = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/getChat/${appliedUserId}/${campaignId}`, 
+        `${API_BASE_URL}/getChat/${appliedUserId}/${campaignId}`, 
         { credentials: 'include' }
       );
       
@@ -260,7 +261,7 @@ const Messages: React.FC = () => {
     try {
       // Fetch fresh messages
       const response = await fetch(
-        `http://localhost:8080/getChat/${chat.id}`, 
+        `${API_BASE_URL}/getChat/${chat.id}`, 
         { credentials: 'include' }
       );
       
@@ -336,7 +337,7 @@ const handleSendMessage = async (content: string) => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/approveChat/${selectedChat.id}`,
+        `${API_BASE_URL}/approveChat/${selectedChat.id}`,
         {
           method: 'POST',
           credentials: 'include'
@@ -362,7 +363,7 @@ const handleSendMessage = async (content: string) => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/rejectChat/${selectedChat.id}`,
+        `${API_BASE_URL}/rejectChat/${selectedChat.id}`,
         {
           method: 'POST',
           credentials: 'include'

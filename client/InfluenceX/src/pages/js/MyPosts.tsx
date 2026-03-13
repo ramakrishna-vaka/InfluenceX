@@ -24,6 +24,7 @@ interface Campaign {
 }
 
 const MyPosts: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const MyPosts: React.FC = () => {
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/my-posts', {
+      const response = await fetch(`${API_BASE_URL}/my-posts`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'

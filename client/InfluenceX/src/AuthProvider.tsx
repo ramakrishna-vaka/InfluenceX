@@ -20,7 +20,8 @@ type AuthUser = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [authUser, setAuthUser] = useState<AuthUser | null>(null);
     const [loading, setLoading] = useState(true);
@@ -31,7 +32,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     //on app load, we make a request to backend to verify the cookie
     //if valid, we set isLoggedIn to true
     useEffect(() => {
-        fetch('http://localhost:8080/whoAmI', { credentials: 'include' })
+        fetch(`${API_BASE_URL}/whoAmI`, { credentials: 'include' })
             .then(res => {
                 if (res.ok) {
                     return res.json();

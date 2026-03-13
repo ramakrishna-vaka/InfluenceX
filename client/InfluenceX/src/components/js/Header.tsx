@@ -27,6 +27,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { authUser, isLoggedIn, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   useEffect(() => {
       const fetchNotifications = async () => {
         try {
-          const response = await fetch('http://localhost:8080/get/notifications',{
+          const response = await fetch(`${API_BASE_URL}/get/notifications`,{
             method:'GET',
             headers:{
                     'Content-Type':'application/json'
@@ -124,7 +125,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     
     if (!showNotifications && unreadCount > 0) {
       try {
-        const response = await fetch('http://localhost:8080/post/notification', {
+        const response = await fetch(`${API_BASE_URL}/post/notification`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

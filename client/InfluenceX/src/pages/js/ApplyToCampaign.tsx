@@ -74,6 +74,7 @@ const getStatusLabel = (status: string) => {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const ApplyToCampaign: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const { authUser } = useAuth();
@@ -91,7 +92,7 @@ const ApplyToCampaign: React.FC = () => {
   const fetchCampaignDetails = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8080/posts/${postId}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/posts/${postId}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch campaign details');
       const data = await res.json();
       setCampaign(data);
@@ -119,7 +120,7 @@ const ApplyToCampaign: React.FC = () => {
     try {
       setSubmitting(true);
       setError(null);
-      const res = await fetch('http://localhost:8080/application/create', {
+      const res = await fetch(`${API_BASE_URL}/application/create`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

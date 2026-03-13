@@ -52,6 +52,7 @@ const fmtDate = (iso: string) => {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const WalletDialog: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [screen, setScreen]       = useState<Screen>('wallet');
   const [wallet, setWallet]       = useState<WalletData | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -75,7 +76,7 @@ const WalletDialog: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
   const fetchWallet = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/wallet', { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/wallet`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load wallet');
       const data: WalletData = await res.json();
       setWallet(data);
@@ -104,7 +105,7 @@ const WalletDialog: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     }
     setWithdrawing(true);
     try {
-      const res = await fetch('http://localhost:8080/wallet/withdraw', {
+      const res = await fetch(`${API_BASE_URL}/wallet/withdraw`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

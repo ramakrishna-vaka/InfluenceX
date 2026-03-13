@@ -11,6 +11,7 @@ import '../css/Auth.css';
 type Screen = 'login' | 'forgot-email' | 'forgot-reset';
 
 export default function Login() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const { login, setAuthUser } = useAuth();
 
@@ -37,7 +38,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/login', {
+      const res = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -45,7 +46,7 @@ export default function Login() {
       });
       if (!res.ok) { setError('Invalid email or password.'); return; }
 
-      const whoRes = await fetch('http://localhost:8080/whoAmI', { credentials: 'include' });
+      const whoRes = await fetch(`${API_BASE_URL}/whoAmI`, { credentials: 'include' });
       if (!whoRes.ok) { setError('Could not fetch user info.'); return; }
       const data = await whoRes.json();
       setAuthUser({ id: data.id, name: data.name, email: data.email, imageData: data.imageData, rating: data.rating, walletMoney: data.walletMoney });
@@ -63,7 +64,7 @@ export default function Login() {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/auth/forgot-password/send', {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: fpEmail }),
@@ -79,7 +80,7 @@ export default function Login() {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/auth/forgot-password/verify-code', {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password/verify-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: fpEmail, code: fpCode }),
@@ -97,7 +98,7 @@ export default function Login() {
     if (fpNewPass.length < 8)    { setError('Password must be at least 8 characters.'); return; }
     setError(''); setLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/auth/forgot-password/reset', {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: fpEmail, code: fpCode, newPassword: fpNewPass }),

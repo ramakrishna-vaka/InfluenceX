@@ -339,6 +339,7 @@ const ReportDialog: React.FC<{
   appId: string;
   onClose: () => void;
 }> = ({ appId, onClose }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [category,   setCategory]   = useState('');
   const [message,    setMessage]    = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -348,7 +349,7 @@ const ReportDialog: React.FC<{
     if (!category || !message.trim()) return;
     setSubmitting(true);
     try {
-      await fetch(`http://localhost:8080/application/${appId}/report`, {
+      await fetch(`${API_BASE_URL}/application/${appId}/report`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -504,6 +505,7 @@ const loadRazorpay = (): Promise<boolean> => new Promise(resolve => {
 const ApplicationTimeline: React.FC<Props> = ({
   application, campaign, collaboration, onRefresh,
 }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
 
   const [showDeliverables, setShowDeliverables] = useState(false);
@@ -569,20 +571,20 @@ const ApplicationTimeline: React.FC<Props> = ({
       body: body ? JSON.stringify(body) : undefined,
     });
 
-  const handleAccept   = async () => { await doPost(`http://localhost:8080/application/${appId}/accept`);   onRefresh(); };
-  const handleReject   = async () => { await doPost(`http://localhost:8080/application/${appId}/reject`);   onRefresh(); };
-  const handleWithdraw = async () => { await doPost(`http://localhost:8080/application/${appId}/withdraw`); onRefresh(); };
+  const handleAccept   = async () => { await doPost(`${API_BASE_URL}/application/${appId}/accept`);   onRefresh(); };
+  const handleReject   = async () => { await doPost(`${API_BASE_URL}/application/${appId}/reject`);   onRefresh(); };
+  const handleWithdraw = async () => { await doPost(`${API_BASE_URL}/application/${appId}/withdraw`); onRefresh(); };
 
   // Sends plain JSON array — matches List<DeliverablesDTO> on the backend
   const handleSubmitDeliverables = async (rows: DeliverableRow[]) => {
-    await doPost(`http://localhost:8080/application/${appId}/upload-deliverables`, rows);
+    await doPost(`${API_BASE_URL}/application/${appId}/upload-deliverables`, rows);
     setShowDeliverables(false);
     onRefresh();
   };
 
   // Brand: reject deliverables → DELIVERABLES_REJECTED
   const handleRejectDeliverables = async () => {
-    await doPost(`http://localhost:8080/application/${appId}/reject-deliverables`);
+    await doPost(`${API_BASE_URL}/application/${appId}/reject-deliverables`);
     onRefresh();
   };
 
@@ -590,7 +592,7 @@ const ApplicationTimeline: React.FC<Props> = ({
   const handleAcceptDeliverables = async () => {
     setPayLoading(true);
     try {
-      const res  = await doPost(`http://localhost:8080/payment/order/${appId}`);
+      const res  = await doPost(`${API_BASE_URL}/payment/order/${appId}`);
       const data = await res.json();
 
       const ok = await loadRazorpay();
@@ -604,7 +606,7 @@ const ApplicationTimeline: React.FC<Props> = ({
         description: 'Payment for campaign collaboration',
         order_id:    data.orderId,
         handler: async (response: any) => {
-          await doPost('http://localhost:8080/payment/verify', {
+          await doPost(`${API_BASE_URL}/payment/verify`, {
             razorpayOrderId:   response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
@@ -616,7 +618,7 @@ const ApplicationTimeline: React.FC<Props> = ({
       });
 
       rzp.on('payment.failed', async (resp: any) => {
-        await doPost('http://localhost:8080/payment/failed', {
+        await doPost(`${API_BASE_URL}/payment/failed`, {
           razorpayOrderId: data.orderId,
           reason: resp.error?.description ?? 'Payment failed',
         });
@@ -633,7 +635,7 @@ const ApplicationTimeline: React.FC<Props> = ({
 
   // Brand: submit written review
   const handleSubmitReview = async (rating: number, comment: string) => {
-    await doPost(`http://localhost:8080/application/${appId}/review`, { rating, comment });
+    await doPost(`${API_BASE_URL}/application/${appId}/review`, { rating, comment });
     setShowReview(false);
     onRefresh();
   };

@@ -26,6 +26,7 @@ const getStatusConfig = (status: string) => {
 };
 
 const Home: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ const Home: React.FC = () => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:8080/posts', { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/posts`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch posts');
         setPosts(await res.json());
       } catch (err) {

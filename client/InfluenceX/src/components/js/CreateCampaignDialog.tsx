@@ -111,6 +111,7 @@ const buildInitialForm = (post: CreateCampaignDialogProps["post"]): FormData => 
 const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
   isOpen, onClose, userId, post, mode,
 }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [formData, setFormData]           = useState<FormData>(buildInitialForm(post));
   const [image, setImage]                 = useState<File | null>(null);
   const [existingImage, setExistingImage] = useState(post?.imageBase64 || "");
@@ -126,7 +127,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
       setFormData(initial);
       setExistingImage(post.imageBase64 || "");
       if (mode === "edit") {
-        fetch(`http://localhost:8080/applications/${post.id}`, { credentials: "include" })
+        fetch(`${API_BASE_URL}/applications/${post.id}`, { credentials: "include" })
           .then(r => r.json())
           .then(d => setApplications(Array.isArray(d) ? d : []))
           .catch(() => setApplications([]));
@@ -262,8 +263,8 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     if (image) data.append("image", image);
 
     const url = mode === "edit"
-      ? `http://localhost:8080/update/post/${post?.id}`
-      : "http://localhost:8080/create/post";
+      ? `${API_BASE_URL}/update/post/${post?.id}`
+      : `${API_BASE_URL}/create/post`;
 
     const res = await fetch(url, { method: "POST", body: data, credentials: "include" });
     if (res.ok) {

@@ -18,6 +18,7 @@ export interface Counts {
 }
 
 const MyCollaborations: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +30,7 @@ const MyCollaborations: React.FC = () => {
   const fetchCollaborations = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:8080/my-collaborations', {
+      const res = await fetch(`${API_BASE_URL}/my-collaborations`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       });
       const data = await res.json();

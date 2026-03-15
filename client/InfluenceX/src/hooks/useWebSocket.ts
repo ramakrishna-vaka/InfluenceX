@@ -9,6 +9,7 @@ interface Notification {
 }
 
 export const useWebSocket = (userId: number | undefined) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const clientRef = useRef<Client | null>(null);
 
@@ -16,7 +17,7 @@ export const useWebSocket = (userId: number | undefined) => {
     if (!userId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
       debug: (str) => {
         console.log('STOMP: ' + str);
       },

@@ -26,16 +26,20 @@ export const CampaignFilterProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
   const [filters, setFilters] = useState<FilterState>({
-    status: 'all',
-    category: 'all',
-    budget: 'all'
+    status: ['all'],
+    category: ['all'],
+    budget: 'all',
+    compensationType: 'all',
+    platforms: []
   });
 
   const clearAllFilters = () => {
     setFilters({
-      status: 'all',
-      category: 'all',
-      budget: 'all'
+      status: ['all'],
+      category: ['all'],
+      budget: 'all',
+      compensationType: 'all',
+      platforms: []
     });
     setSortBy('recent');
     setSearchQuery('');

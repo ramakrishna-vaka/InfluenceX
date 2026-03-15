@@ -48,8 +48,8 @@ export default function Register() {
         body: JSON.stringify({ name, email, password }),
       });
       if (!res.ok) {
-        const msg = await res.text();
-        setError(msg || 'Registration failed.'); return;
+        const msg = await res.json();
+        setError(msg.message || 'Registration failed.'); return;
       }
       // Now send OTP
       await fetch(`${API_BASE_URL}/auth/otp/send`, {

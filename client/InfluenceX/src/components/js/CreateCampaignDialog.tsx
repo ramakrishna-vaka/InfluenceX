@@ -16,13 +16,13 @@ interface FormData {
   description: string;
   deliverables: string;
   compensationType: CompensationType;
-  compensationDescription: string;
+  compensation: string;
   applicationDeadline: string;
   deliverableDeadline: string;
   platforms: string[];
   location: string;
   followers: string;
-  postStatus: string;
+  postStatus: any;
 }
 
 const campaignTypes = [
@@ -52,7 +52,7 @@ const compensationTypes: {
 ];
 
 const IN_PROGRESS_LOCKED: (keyof FormData | "image")[] = [
-  "deliverables", "compensationType", "compensationDescription", "deliverableDeadline",
+  "deliverables", "compensation", "deliverableDeadline",
 ];
 
 interface LifecycleOption {
@@ -98,8 +98,8 @@ const buildInitialForm = (post: CreateCampaignDialogProps["post"]): FormData => 
   type:                    post?.type                          ?? "",
   description:             post?.description                   ?? "",
   deliverables:            (post as any)?.deliverables         ?? "",
-  compensationType:        (post as any)?.compensationType     ?? "money",
-  compensationDescription: (post as any)?.compensationDescription ?? "",
+  compensationType:           "money",
+  compensation: (post as any)?.compensationDescription ?? "",
   applicationDeadline:     (post as any)?.applicationDeadline  ?? "",
   deliverableDeadline:     post?.deadline                      ?? "",
   platforms:               post?.platformsNeeded               ?? [],
@@ -146,7 +146,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const hasInProgress = applications.some(a => a.status === "in-progress");
+  const hasInProgress = applications.some(a => a.status !== "PENDING" && a.status !== "REJECTED" && a.status !== "WITHDRAW");
 
   const isEditable = (field: keyof FormData | "image"): boolean => {
     if (mode !== "edit") return true;
@@ -224,11 +224,6 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     }));
   };
 
-  const handleCompensationTypeSelect = (ct: CompensationType) => {
-    if (!isEditable("compensationType")) return;
-    setFormData(p => ({ ...p, compensationType: ct, compensationDescription: ct !== "money" ? "" : p.compensationDescription }));
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
@@ -250,8 +245,8 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     data.append("campaignTitle",           formData.name);
     data.append("campaignDescription",     formData.description);
     data.append("deliverables",            formData.deliverables);
-    data.append("compensationType",        formData.compensationType);
-    data.append("compensationDescription", formData.compensationDescription);
+    data.append("compensationType",        "money");
+    data.append("compensationDescription", formData.compensation);
     data.append("applicationDeadline",     formData.applicationDeadline);
     data.append("deadline",                formData.deliverableDeadline);
     data.append("location",                formData.location);
@@ -357,35 +352,18 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
           {/* Compensation */}
           <div className="ccd-field">
             <label className="ccd-label">
-              Compensation Type
+              Compensation
               {!isEditable("compensationType") && (
                 <span className="ccd-locked-badge"><Lock size={12} /> Locked — application in progress</span>
               )}
             </label>
-            <div className={`ccd-comp-tabs ${!isEditable("compensationType") ? "ccd-disabled" : ""}`}>
-              {compensationTypes.map(({ value, label, icon: Icon }) => (
-                <button key={value} type="button"
-                  className={`ccd-comp-tab ${formData.compensationType === value ? "ccd-comp-selected" : ""}`}
-                  onClick={() => handleCompensationTypeSelect(value as CompensationType)}
-                  disabled={!isEditable("compensationType")}>
-                  <Icon size={15} />{label}
-                </button>
-              ))}
-            </div>
-            {formData.compensationType === "money" && (
+            { (
               <div className="ccd-comp-input-wrapper">
                 <span className="ccd-currency-prefix">₹</span>
-                <input className="ccd-input ccd-input-indent" type="number" name="compensationDescription"
-                  value={formData.compensationDescription} onChange={handleInputChange}
+                <input className="ccd-input ccd-input-indent" type="number" name="compensation"
+                  value={formData.compensation} onChange={handleInputChange}
                   placeholder="Enter amount (e.g. 5000)" />
               </div>
-            )}
-            {formData.compensationType !== "money" && (
-              <input
-                className={`ccd-input ${!isEditable("compensationDescription") ? "ccd-input-disabled" : ""}`}
-                type="text" name="compensationDescription" value={formData.compensationDescription}
-                onChange={handleInputChange} placeholder={selectedComp.placeholder}
-                disabled={!isEditable("compensationDescription")} />
             )}
           </div>
 

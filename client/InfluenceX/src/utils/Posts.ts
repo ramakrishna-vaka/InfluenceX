@@ -11,6 +11,7 @@ export interface Post {
     name: string;
     email: string;
     id?: string;
+    rating?: number;
   };
   createdAt?: string;
   postStatus: 'OPEN' | 'NO_LONGER_ACCEPTING_APPLICATIONS' | 'COMPLETED';
@@ -25,7 +26,7 @@ export interface Post {
   compensationDescription: string;
   updatedAt?: string;
   applicationDeadline: string;
-  applications: number;
+  applications: any[];
 }
 
 export const handleCreateCampaign=()=>{

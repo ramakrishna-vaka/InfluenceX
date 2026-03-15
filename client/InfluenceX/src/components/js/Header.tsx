@@ -200,10 +200,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
         { value: "influencer-collab", label: "Influencer Collab",  },
         { value: "content-creation",  label: "Content Creation",   },
     ],
-    compensationType: [
-      { value: 'money', label: 'Money' },
-      { value: 'other', label: 'Other' },
-    ],
     platforms: [
       { value: 'all', label: 'All Platforms' },
       { value: 'instagram', label: 'Instagram' },

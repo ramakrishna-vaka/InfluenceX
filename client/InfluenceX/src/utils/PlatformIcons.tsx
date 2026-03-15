@@ -16,6 +16,7 @@ export interface PlatformConfig {
   icon: React.ElementType;
   label: string;
   color: string;
+  emoji?: string;
 }
 
 export const PLATFORM_MAP: Record<string, PlatformConfig> = {

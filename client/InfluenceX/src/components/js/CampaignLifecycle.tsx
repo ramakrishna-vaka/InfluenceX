@@ -45,6 +45,9 @@ interface ApplicationLifecycle {
     comment: string;
     createdAt: string;
   };
+  influencerId?: string;
+  influencerName?: string;
+  currentStatus?: any;
 }
 
 const CampaignLifecycle: React.FC = () => {

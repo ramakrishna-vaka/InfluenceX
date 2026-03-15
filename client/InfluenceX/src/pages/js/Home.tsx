@@ -77,9 +77,6 @@ const Home: React.FC = () => {
     if (!filters.status.includes('all')) {
       result = result.filter(p => filters.status.includes(p.postStatus.toLowerCase()));
     }
-    if (filters.compensationType) {
-      result = result.filter(p => p.compensationType === filters.compensationType);
-    }
     if (showMyPosts) result = result.filter(p => p.isMyPost);
     result.sort((a, b) => {
       switch (sortBy) {
@@ -245,15 +242,9 @@ const Home: React.FC = () => {
                     <p className="post-description">{post.description}</p>
 
                     <div className="post-metrics">
-                      {post.compensationType === 'money' ? (
+                      { (
                         <div className="metric price-metric">
-                          <DollarSign className="metric-icon" size={16} />
-                          <span className="metric-value">{(fmt(Number(post.compensationDescription)))}</span>
-                        </div>
-                      ) : (
-                        <div className="metric barter-metric">
-                          <Gift className="metric-icon" size={16} />
-                          <span className="metric-value">{post.compensationDescription || 'Other'}</span>
+                          <span className="metric-value">₹{(fmt(Number(post.compensationDescription)))}</span>
                         </div>
                       )}
                       <div className="metric">
@@ -273,7 +264,7 @@ const Home: React.FC = () => {
                       </div>
                       <div className="post-rating">
                         <Star size={14} fill="currentColor" />
-                        <span>{post.createdBy?.rating || 0}</span>
+                        <span>{post.createdBy?.rating || 'Not Rated'}</span>
                       </div>
                     </div>
 

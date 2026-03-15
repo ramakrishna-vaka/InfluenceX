@@ -17,7 +17,7 @@ interface ApplicationsListProps {
   applications: Application[];
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
-  filterStatus: 'all' | 'pending' | 'accepted' | 'in-progress' | 'completed';
+  filterStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'IN_PROGRESS' | 'DELIVERED' | 'COMPLETED' | 'ALL';
   onRefresh: () => void;
 }
 
@@ -54,18 +54,18 @@ const ApplicationsList: React.FC<ApplicationsListProps> = ({
   };
 
   const filteredApplications = applications.filter(app => {
-    if (filterStatus === 'all') return true;
-    if (filterStatus === 'in-progress') return app.status === 'in-progress' || app.status === 'delivered';
-    if (filterStatus === 'accepted') return app.status === 'accepted' || app.status === 'in-progress';
-    if (filterStatus === 'completed') return app.status === 'completed';
-    return app.status === filterStatus;
+    if (filterStatus === 'ALL') return true;
+    if (filterStatus === 'IN_PROGRESS') return app.currentStatus === 'IN_PROGRESS' || app.currentStatus === 'DELIVERED';
+    if (filterStatus === 'ACCEPTED') return app.currentStatus === 'ACCEPTED' || app.currentStatus === 'IN_PROGRESS';
+    if (filterStatus === 'COMPLETED') return app.currentStatus === 'COMPLETED';
+    return app.currentStatus === filterStatus;
   });
 
   return (
     <div className="applications-list-container">
       <div className="applications-list-header">
         <h2>Applications</h2>
-        <span className="application-count">{filteredApplications.length} {filterStatus !== 'all' ? filterStatus : ''}</span>
+        <span className="application-count">{filteredApplications.length} {filterStatus !== 'ALL' ? filterStatus : ''}</span>
       </div>
 
       <div className="applications-scroll">

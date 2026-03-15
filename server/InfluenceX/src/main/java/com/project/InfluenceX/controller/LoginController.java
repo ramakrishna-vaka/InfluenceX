@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/", allowCredentials = "true")
 public class LoginController {
 
     private final UserService userService;
@@ -41,28 +41,33 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginRequest, HttpServletResponse response) {
         // Step 1: Check if the email/password is valid
-        User user = userService.authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        try {
+            User user = userService.authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+
+            // Step 2: User is authenticated, generate a JWT token for them
+            String token = jwtService.generateToken(user);
+
+            // Step 3: Send the token as a HttpOnly cookie (safe from JS)
+            ResponseCookie cookie = ResponseCookie.from("authToken", token)
+                    .httpOnly(true)      // prevents access from JavaScript (protects against XSS)
+                    .secure(false)       // use true in production when using HTTPS
+                    .path("/")           // cookie valid for the entire site
+                    .sameSite("Strict")  // prevents sending cookie in cross-site requests
+                    .maxAge(15 * 60)     // 15 minutes
+                    .build();
+
+            // Step 4: Add the cookie to the response
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            // Step 5: Return a friendly message (frontend can also call /whoAmI to get user info)
+            return ResponseEntity.ok("Login successful");
+        }catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));  // ← structured error
         }
-
-        // Step 2: User is authenticated, generate a JWT token for them
-        String token = jwtService.generateToken(user);
-
-        // Step 3: Send the token as a HttpOnly cookie (safe from JS)
-        ResponseCookie cookie = ResponseCookie.from("authToken", token)
-                .httpOnly(true)      // prevents access from JavaScript (protects against XSS)
-                .secure(false)       // use true in production when using HTTPS
-                .path("/")           // cookie valid for the entire site
-                .sameSite("Strict")  // prevents sending cookie in cross-site requests
-                .maxAge(15 * 60)     // 15 minutes
-                .build();
-
-        // Step 4: Add the cookie to the response
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        // Step 5: Return a friendly message (frontend can also call /whoAmI to get user info)
-        return ResponseEntity.ok("Login successful");
     }
 
     @GetMapping("/whoAmI")
@@ -196,6 +201,10 @@ public class LoginController {
                 user.setName(name);
                 user.setPassword("GOOGLE_USER"); // dummy
                 userService.registerGoogleUser(user);
+                user.setAuthProvider("GOOGLE"); // ← flag it
+                user.setCreatedAt(java.time.LocalDateTime.now());
+                User savedUser = userService.saveUser(user);
+                userService.addRegisterBonus(savedUser);
             }
 
             // 🎟 Generate JWT
@@ -214,8 +223,8 @@ public class LoginController {
             return ResponseEntity.ok("Google login successful");
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Google login failed");
-        }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Google login failed: " + e.getMessage()));        }
     }
 
 }

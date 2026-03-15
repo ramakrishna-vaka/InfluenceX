@@ -10,7 +10,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth/oauth")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/", allowCredentials = "true")
 public class OAuthController {
 
     private final OAuthService oauthService;

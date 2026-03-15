@@ -37,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")      // endpoint to connect {client connects to this endpoint first}
-                .setAllowedOrigins("http://localhost:5173")// allow all origins for now
+                .setAllowedOrigins("https://www.influencex.online/")// allow all origins for now
                 .withSockJS();           // for browser fallback, this is http polling
     }
 

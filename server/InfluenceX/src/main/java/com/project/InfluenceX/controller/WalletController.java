@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/wallet")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/", allowCredentials = "true")
 public class WalletController {
 
     private final WalletService walletService;

@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.project.InfluenceX.Utils.ModelToDTOMapper.getApplicationDTO;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/",allowCredentials = "true")
 public class ApplicationController {
 
     private final ApplicationService applicationService;

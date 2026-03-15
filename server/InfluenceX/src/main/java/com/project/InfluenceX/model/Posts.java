@@ -84,6 +84,12 @@ public class Posts {
     @Column
     private LocalDateTime applicationDeadline;
 
+    @Column
+    private double averageRating = 0.0;
+
+    @Column
+    private int ratingCount = 0;
+
     public Posts() {}
 
     // ---------- GETTERS ----------
@@ -210,4 +216,10 @@ public class Posts {
     public void setApplicationDeadline(LocalDateTime applicationDeadline){
         this.applicationDeadline=applicationDeadline;
     }
+
+    public double getAverageRating() { return averageRating; }
+    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
+
+    public int getRatingCount() { return ratingCount; }
+    public void setRatingCount(int ratingCount) { this.ratingCount = ratingCount; }
 }

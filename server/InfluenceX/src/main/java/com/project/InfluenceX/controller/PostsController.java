@@ -16,7 +16,7 @@ import java.util.Base64;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/",allowCredentials = "true")
 public class PostsController {
 
     private final PostsService postsService;

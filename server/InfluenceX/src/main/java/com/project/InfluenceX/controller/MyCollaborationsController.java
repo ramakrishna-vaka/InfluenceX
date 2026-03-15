@@ -16,7 +16,7 @@ import java.net.http.HttpResponse;
 import static org.springframework.messaging.simp.SimpMessageHeaderAccessor.getUser;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
+@CrossOrigin(origins = "https://www.influencex.online/",allowCredentials = "true")
 public class MyCollaborationsController {
 
     private final AuthService authService;

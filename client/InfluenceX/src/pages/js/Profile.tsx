@@ -93,7 +93,9 @@ const Profile = () => {
       totalPosts: 0
     },
     createdPosts: [],
-    collaborations: []
+    collaborations: [],
+    website : '',
+    rating: 0
   });
 
   const [editForm, setEditForm] = useState({ ...profileData });

@@ -10,6 +10,7 @@ declare global {
 }
 
 export default function GoogleButton() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 
@@ -18,7 +19,7 @@ export default function GoogleButton() {
 
   const handleGoogleResponse = async (response: any) => {
     try {
-      const result = await fetch("http://localhost:8080/auth/google", {
+      const result = await fetch(`${API_BASE_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -26,14 +27,14 @@ export default function GoogleButton() {
       });
 
       if (result.ok) {
-        const userResponse = await fetch("http://localhost:8080/whoAmI", {
+        const userResponse = await fetch(`${API_BASE_URL}/whoAmI`, {
           method: "GET",
           credentials: "include",
         });
 
         const data = await userResponse.json();
 
-        setAuthUser({ id: data.id, name: data.name, email: data.email });
+        setAuthUser({ id: data.id, name: data.name, email: data.email, imageData: data.imageData, rating: data.rating, walletMoney: data.walletMoney });
         login();
         navigate("/");
       } else {

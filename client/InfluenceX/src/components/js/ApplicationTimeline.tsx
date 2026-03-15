@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import '../css/ApplicationTimeline.css';
 import type { Collaboration, StatusEvent } from '../../pages/js/MyCollaborations';
+import type { Application } from './ApplicationsList';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -58,7 +59,7 @@ interface DeliverableRow {
 }
 
 interface Props {
-  application?: ApplicationLifecycle | null;
+  application?: Application | null;
   campaign?: Campaign;
   collaboration?: Collaboration | null;
   onRefresh: () => void;

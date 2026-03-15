@@ -4,6 +4,7 @@ import { ArrowLeft, Users, CheckCircle, Clock, Package, DollarSign, Gift } from 
 import '../css/CampaignLifecycle.css';
 import ApplicationsList from './ApplicationsList';
 import ApplicationTimeline from './ApplicationTimeline';
+import type { Application } from './ApplicationsList';
 
 interface Campaign {
   id: string;
@@ -55,10 +56,10 @@ const CampaignLifecycle: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
   const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [applications, setApplications] = useState<ApplicationLifecycle[]>([]);
-  const [selectedApplication, setSelectedApplication] = useState<ApplicationLifecycle | null>(null);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statsFilter, setStatsFilter] = useState<'all' | 'pending' | 'accepted' | 'in-progress' | 'completed'>('all');
+  const [statsFilter, setStatsFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED'>('ALL');
 
   useEffect(() => {
     fetchCampaignData();
@@ -82,11 +83,11 @@ const CampaignLifecycle: React.FC = () => {
 
   const getStatusCounts = () => ({
     total: applications.length,
-    pending: applications.filter(a => a.status === 'pending').length,
-    accepted: applications.filter(a => a.status === 'accepted' || a.status === 'in-progress').length,
-    inProgress: applications.filter(a => a.status === 'in-progress').length,
-    delivered: applications.filter(a => a.status === 'delivered').length,
-    completed: applications.filter(a => a.status === 'completed').length,
+    pending: applications.filter(a => a.currentStatus === 'PENDING').length,
+    accepted: applications.filter(a => a.currentStatus === 'ACCEPTED' || a.currentStatus === 'IN_PROGRESS').length,
+    inProgress: applications.filter(a => a.currentStatus === 'IN_PROGRESS').length,
+    delivered: applications.filter(a => a.currentStatus === 'DELIVERED').length,
+    completed: applications.filter(a => a.currentStatus === 'COMPLETED').length,
   });
 
   const stats = getStatusCounts();
@@ -151,32 +152,32 @@ const CampaignLifecycle: React.FC = () => {
         {/* Right: compact stat pills */}
         <div className="topbar-stats">
           <button
-            className={`stat-pill stat-pill-total ${statsFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setStatsFilter('all')}
+            className={`stat-pill stat-pill-total ${statsFilter === 'ALL' ? 'active' : ''}`}
+            onClick={() => setStatsFilter('ALL')}
           >
             <Users size={12} />
             <strong>{stats.total}</strong>
             <span>All</span>
           </button>
           <button
-            className={`stat-pill stat-pill-pending ${statsFilter === 'pending' ? 'active' : ''}`}
-            onClick={() => setStatsFilter('pending')}
+            className={`stat-pill stat-pill-pending ${statsFilter === 'PENDING' ? 'active' : ''}`}
+            onClick={() => setStatsFilter('PENDING')}
           >
             <Clock size={12} />
             <strong>{stats.pending}</strong>
             <span>Pending</span>
           </button>
           <button
-            className={`stat-pill stat-pill-progress ${statsFilter === 'in-progress' ? 'active' : ''}`}
-            onClick={() => setStatsFilter('in-progress')}
+            className={`stat-pill stat-pill-progress ${statsFilter === 'IN_PROGRESS' ? 'active' : ''}`}
+            onClick={() => setStatsFilter('IN_PROGRESS')}
           >
             <Package size={12} />
             <strong>{stats.inProgress}</strong>
             <span>Active</span>
           </button>
           <button
-            className={`stat-pill stat-pill-completed ${statsFilter === 'completed' ? 'active' : ''}`}
-            onClick={() => setStatsFilter('completed')}
+            className={`stat-pill stat-pill-completed ${statsFilter === 'COMPLETED' ? 'active' : ''}`}
+            onClick={() => setStatsFilter('COMPLETED')}
           >
             <CheckCircle size={12} />
             <strong>{stats.completed}</strong>

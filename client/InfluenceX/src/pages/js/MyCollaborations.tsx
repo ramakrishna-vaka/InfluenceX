@@ -10,6 +10,8 @@ export interface Collaboration {
   postId: string; title: string; applicationId: string;
   userName: string; userId: string;
   applicationStatusList: StatusEvent[]; deadline: string;
+  postName?: any;
+  postDeadline?: any;
 }
 
 export interface Counts {

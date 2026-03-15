@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, CheckCircle, Clock, XCircle, Package, Star } from 'lucide-react';
 import '../css/ApplicationsList.css';
 
-interface Application {
+export interface Application {
   id: string;
   influencerId: string;
   influencerName: string;

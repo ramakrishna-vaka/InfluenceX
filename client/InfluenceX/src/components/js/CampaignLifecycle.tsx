@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, CheckCircle, Clock, Package, DollarSign, Gift } from 'lucide-react';
-import '../css/CampaignLifecycle.css';
+import '../css/CampaignLifeCycle.css';
 import ApplicationsList from './ApplicationsList';
 import ApplicationTimeline from './ApplicationTimeline';
 import type { Application } from './ApplicationsList';

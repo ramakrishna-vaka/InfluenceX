@@ -11,6 +11,10 @@ export interface Application {
   currentStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'IN_PROGRESS' | 'DELIVERED' | 'COMPLETED';
   appliedAt: string;
   pitchMessage: string;
+  applicationStatus: any;
+  applicationId: string;
+  deliverables: any[];
+  review?: any;
 }
 
 interface ApplicationsListProps {

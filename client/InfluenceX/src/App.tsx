@@ -16,7 +16,7 @@ import ApplyToCampaign from './pages/js/ApplyToCampaign.tsx';
 import MyCollaborations from './pages/js/MyCollaborations.tsx';
 import CampaignLifecycle from './components/js/CampaignLifecycle.tsx';
 import Profile from './pages/js/Profile.tsx';
-import ToastContainer from './utils/ToastContainer';
+//import ToastContainer from './utils/ToastContainer';
 
 function App() {
   const [navbarVisible, setNavbarVisible] = useState(false);
@@ -24,7 +24,7 @@ function App() {
 
   return (
     <Router>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
     <AuthProvider>
       <CampaignFilterProvider>
       

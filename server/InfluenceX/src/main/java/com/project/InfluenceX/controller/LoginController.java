@@ -212,9 +212,9 @@ public class LoginController {
 
             ResponseCookie cookie = ResponseCookie.from("authToken", token)
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
-                    .sameSite("Strict")
+                    .sameSite("None")
                     .maxAge(15 * 60)
                     .build();
 

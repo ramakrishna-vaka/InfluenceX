@@ -53,9 +53,9 @@ public class LoginController {
             // Step 3: Send the token as a HttpOnly cookie (safe from JS)
             ResponseCookie cookie = ResponseCookie.from("authToken", token)
                     .httpOnly(true)      // prevents access from JavaScript (protects against XSS)
-                    .secure(false)       // use true in production when using HTTPS
+                    .secure(true)       // use true in production when using HTTPS
                     .path("/")           // cookie valid for the entire site
-                    .sameSite("Strict")  // prevents sending cookie in cross-site requests
+                    .sameSite("None")  // prevents sending cookie in cross-site requests
                     .maxAge(15 * 60)     // 15 minutes
                     .build();
 

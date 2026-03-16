@@ -639,6 +639,8 @@ body {
   background: white;
   border-radius: 20px;
   border: 2px dashed var(--border-color);
+  margin: 0 auto;
+  max-width: 500px;
 }
 
 .empty-icon {

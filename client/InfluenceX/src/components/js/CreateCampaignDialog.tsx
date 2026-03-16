@@ -264,6 +264,8 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     const res = await fetch(url, { method: "POST", body: data, credentials: "include" });
     if (res.ok) {
       alert(mode === "edit" ? "Post updated successfully" : "Post Created Successfully");
+      // After successful campaign creation:
+      window.dispatchEvent(new Event('campaign-created'));
       onClose();
     } else {
       alert(mode === "edit" ? "Failed to update Post" : "Failed to create Post");

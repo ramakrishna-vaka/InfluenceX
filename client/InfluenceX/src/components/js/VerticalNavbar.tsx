@@ -52,17 +52,21 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ isVisible, onHide,selec
         </div>
 
         <div className="navbar-footer">
-          <div className="nav-item nav-settings">
+          {/* <div className="nav-item nav-settings">
             <Settings className="nav-icon" size={20} />
             <span className="nav-label">Settings</span>
-          </div>
+          </div> */}
           <div className="user-profile">
-            <div className="user-avatar">
-              <User size={16} />
+           <div className="user-avatar">
+              {authUser?.avatar ? (
+                <img src={authUser.avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              ) : (
+                <User size={16} />
+              )}
             </div>
             <div className="user-info">
               <span className="user-name">{authUser?.name}</span>
-              <span className="user-role">Creator</span>
+              {/* <span className="user-role">Creator</span> */}
             </div>
           </div>
         </div>

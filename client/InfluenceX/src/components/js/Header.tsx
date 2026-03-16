@@ -38,6 +38,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const showFilterControls = ['/', '/my-promotions', '/my-collaborations'].includes(location.pathname);
   
   const [isOpen, setIsOpen] = useState(false);
 
@@ -244,14 +246,21 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
     // You can add your sort logic here or emit an event
   };
 
-  const handleFilterChange = (type: keyof FilterState, value: string) => {
+ const handleFilterChange = (type: keyof FilterState, value: string) => {
   setFilters((prevFilters) => ({
     ...prevFilters,
-    [type]: value
+    [type]: [value]   // wrap in array to match FilterState shape
   }));
 };
 
-  const activeFiltersCount = Object.values(filters).filter(value => value !== 'all').length;
+  const activeFiltersCount = [
+  filters.status.includes('all') ? 0 : 1,
+  filters.category.includes('all') ? 0 : 1,
+  filters.budget !== 'all' ? 1 : 0,
+  filters.compensationType !== 'all' ? 1 : 0,
+  filters.platforms.length > 0 ? 1 : 0,
+].reduce((a, b) => a + b, 0);
+
   const handleOnClick = (pathname:string) => {
     console.log("Clicked");
     onToggleNavbar(pathname);
@@ -333,7 +342,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
 
 
         {/* Search Bar */}
-        <div className="header-search">
+        {showFilterControls && ( <div className="header-search">
           <form onSubmit={handleSearch}>
             <Search size={18} className="search-icon" />
             <input
@@ -344,9 +353,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               className="search-input"
             />
           </form>
-        </div>
+        </div> )}
 
+        
         {/* Sort and Filter Controls - Replacing Navigation */}
+          {showFilterControls && (
         <div className="header-controls">
           {/* Sort Dropdown */}
           <div className="sort-wrapper control-wrapper">
@@ -429,7 +440,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               </div>
             )}
           </div>
-        </div>
+        </div> )}
 
         {/* Right Section - Unchanged */}
         <div className="header-actions">
@@ -493,9 +504,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="user-avatar">
-                {user.avatar ? (
+                {authUser?.avatar ? (
                    <img 
-                        src={user.avatar} 
+                        src={authUser.avatar} 
                         alt="User Avatar"
                       />
                 ) : (
@@ -512,9 +523,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
               <div className="user-dropdown">
                 <div className="user-dropdown-header">
                   <div className="user-avatar large">
-                    {user.avatar ? (
+                    {authUser?.avatar ? (
                        <img 
-                        src={user.avatar} 
+                        src={authUser.avatar} 
                         alt="User Avatar"
                       />
                     ) : (

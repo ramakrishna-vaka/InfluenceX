@@ -57,6 +57,11 @@ const Home: React.FC = () => {
       } finally { setLoading(false); }
     };
     fetchPosts();
+
+    //after adding post, refresh the posts list by listening to custom event
+    const handler = () => fetchPosts();
+    window.addEventListener('campaign-created', handler);
+    return () => window.removeEventListener('campaign-created', handler);
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -75,7 +80,9 @@ const Home: React.FC = () => {
     if (filterCategory !== 'all')
       result = result.filter(p => p.type === filterCategory);
     if (!filters.status.includes('all')) {
-      result = result.filter(p => filters.status.includes(p.postStatus.toLowerCase()));
+      result = result.filter(p =>
+    filters.status.some(s => p.postStatus.toLowerCase().includes(s))
+  );
     }
     if (showMyPosts) result = result.filter(p => p.isMyPost);
     result.sort((a, b) => {
@@ -96,6 +103,13 @@ const Home: React.FC = () => {
         default: return 0;
       }
     });
+    // Sort: posts with images first
+    result.sort((a, b) => {
+      const aHasImg = a.imageBase64?.trim() ? 1 : 0;
+      const bHasImg = b.imageBase64?.trim() ? 1 : 0;
+      return bHasImg - aHasImg;
+    });
+
     return result;
   }, [posts, searchQuery, sortBy, filterCategory, showMyPosts, filters]);
 

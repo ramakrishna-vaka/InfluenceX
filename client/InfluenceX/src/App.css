@@ -27,8 +27,8 @@ body {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-app-content.navbar-open {
-    margin-left: 240px;
-    width: calc(100% - 240px);
+    margin-left: 220px;
+    width: calc(100% - 220px);
   }
 }
 
@@ -107,6 +107,6 @@ body {
 }
 
 .content-shell.navbar-open {
-  margin-left: 280px;
-  width: calc(100% - 280px);
+  margin-left: 220px;
+  width: calc(100% - 220px);
 }

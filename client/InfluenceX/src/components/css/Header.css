@@ -956,3 +956,8 @@
   background: var(--secondary-color);
   color: var(--primary-color);
 }
+
+/* Add this rule */
+.content-shell.navbar-open .header-container {
+  max-width: calc(100vw - 220px);
+}

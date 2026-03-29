@@ -17,6 +17,7 @@ import {
   DollarSign, Star, Send, Eye, AlertCircle, LifeBuoy,
   Calendar, MessageSquare, Upload, Plus, Trash2,
   Link2, ImageIcon, RefreshCw, Loader2, Wallet,
+  ExternalLink,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../css/ApplicationTimeline.css';
@@ -66,8 +67,6 @@ interface Props {
 }
 
 // ─── Status metadata ──────────────────────────────────────────────────────────
-// Keys must exactly match ApplicationStatusEnum values lowercased + underscored.
-// e.g. DELIVERABLES_SUBMITTED → "deliverables_submitted"
 
 interface StatusMeta {
   label: string;
@@ -79,120 +78,96 @@ interface StatusMeta {
 }
 
 const STATUS_META: Record<string, StatusMeta> = {
-
-  // Virtual first step synthesised by the frontend from appliedAt
   created: {
     label: 'Application Submitted',
     icon: <FileText size={15} />,
     color: '#6366f1', bg: '#e0e7ff', ring: '#a5b4fc',
     description: 'Application successfully submitted.',
   },
-
-  // ── ApplicationStatusEnum values ──────────────────────────────────────────
-
   pending: {
     label: 'Pending Review',
     icon: <Clock size={15} />,
     color: '#d97706', bg: '#fef3c7', ring: '#fcd34d',
     description: 'Waiting for the brand to review your application.',
   },
-
   accepted: {
     label: 'Accepted',
     icon: <CheckCircle size={15} />,
     color: '#2563eb', bg: '#dbeafe', ring: '#93c5fd',
     description: 'Application accepted! Start working on your content.',
   },
-
   in_progress: {
     label: 'In Progress',
     icon: <Package size={15} />,
     color: '#6366f1', bg: '#e0e7ff', ring: '#a5b4fc',
     description: 'Content creation is in progress.',
   },
-
   rejected: {
     label: 'Rejected',
     icon: <XCircle size={15} />,
     color: '#dc2626', bg: '#fee2e2', ring: '#fca5a5',
     description: 'Your application was not selected for this campaign.',
   },
-
   withdraw: {
     label: 'Withdrawn',
     icon: <AlertCircle size={15} />,
     color: '#64748b', bg: '#f1f5f9', ring: '#cbd5e1',
     description: 'You withdrew your application.',
   },
-
-  // Set by backend when deliverables deadline passes without submission
   pending_deliverables: {
     label: 'Deliverables Overdue',
     icon: <Send size={15} />,
     color: '#dc2626', bg: '#fee2e2', ring: '#fca5a5',
     description: 'Deadline has passed — please submit your deliverables immediately.',
   },
-
   deliverables_submitted: {
     label: 'Deliverables Submitted',
     icon: <Upload size={15} />,
     color: '#7c3aed', bg: '#ede9fe', ring: '#c4b5fd',
     description: 'Deliverables submitted — awaiting brand review.',
   },
-
   reviewing: {
     label: 'Under Review',
     icon: <Eye size={15} />,
     color: '#7c3aed', bg: '#ede9fe', ring: '#c4b5fd',
     description: 'The brand is reviewing your submitted deliverables.',
   },
-
   deliverables_accepted: {
     label: 'Deliverables Accepted',
     icon: <CheckCircle size={15} />,
     color: '#2563eb', bg: '#dbeafe', ring: '#93c5fd',
     description: 'Deliverables approved! Payment is being initiated.',
   },
-
   deliverables_rejected: {
     label: 'Deliverables Rejected',
     icon: <XCircle size={15} />,
     color: '#dc2626', bg: '#fee2e2', ring: '#fca5a5',
     description: 'Your deliverables were not approved. Please revise and resubmit.',
   },
-
-  // Brand side — Razorpay order created, checkout not yet completed
   payment_pending: {
     label: 'Payment Pending',
     icon: <DollarSign size={15} />,
     color: '#d97706', bg: '#fef3c7', ring: '#fcd34d',
     description: 'Waiting for the brand to complete payment.',
   },
-
-  // Brand side — payment.captured confirmed by webhook
   payment_success: {
     label: 'Payment Successful',
     icon: <CheckCircle size={15} />,
     color: '#059669', bg: '#d1fae5', ring: '#6ee7b7',
     description: 'Payment confirmed. Transferring to influencer wallet.',
   },
-
   payment_failed: {
     label: 'Payment Failed',
     icon: <AlertCircle size={15} />,
     color: '#dc2626', bg: '#fee2e2', ring: '#fca5a5',
     description: 'Payment could not be processed. Please retry.',
   },
-
-  // Influencer side — payment in transit to wallet
   payment_receiving: {
     label: 'Receiving Payment',
     icon: <Wallet size={15} />,
     color: '#0891b2', bg: '#cffafe', ring: '#67e8f9',
     description: 'Payment is on its way to your wallet.',
   },
-
-  // Influencer side — payment fully received
   settled: {
     label: 'Settled',
     icon: <CheckCircle size={15} />,
@@ -216,6 +191,69 @@ const fmtDt = (iso: string) => {
     time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
   };
 };
+
+// ─── View Deliverables Modal (brand only) ─────────────────────────────────────
+
+const ViewDeliverablesModal: React.FC<{
+  deliverables: Deliverable[];
+  onClose: () => void;
+}> = ({ deliverables, onClose }) => (
+  <div className="apptl-modal-overlay" onClick={onClose}>
+    <div className="apptl-modal apptl-modal-wide" onClick={e => e.stopPropagation()}>
+      <div className="apptl-modal-header">
+        <div className="apptl-modal-title-row">
+          <Eye size={18} style={{ color: '#7c3aed' }} />
+          <h3>Submitted Deliverables</h3>
+        </div>
+        <p>Review each piece of content before accepting or requesting a revision.</p>
+      </div>
+
+      <div className="apptl-view-deliverables-list">
+        {deliverables.length === 0 ? (
+          <div className="apptl-view-deliverables-empty">
+            No deliverables have been submitted yet.
+          </div>
+        ) : (
+          deliverables.map((d, i) => (
+            <div key={i} className="apptl-view-deliverable-card">
+              <div className="apptl-view-deliverable-left">
+                {d.imageUrl ? (
+                  <img src={d.imageUrl} alt="preview" className="apptl-view-deliverable-thumb" />
+                ) : (
+                  <div className="apptl-view-deliverable-thumb-placeholder">
+                    <ImageIcon size={20} />
+                  </div>
+                )}
+              </div>
+              <div className="apptl-view-deliverable-info">
+                <span className="apptl-view-deliverable-type">{d.type}</span>
+                {d.uploadedAt && (
+                  <span className="apptl-view-deliverable-date">
+                    Uploaded {new Date(d.uploadedAt).toLocaleDateString('en-US', {
+                      month: 'short', day: 'numeric', year: 'numeric',
+                    })}
+                  </span>
+                )}
+                <a
+                  href={d.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="apptl-view-deliverable-link"
+                >
+                  <ExternalLink size={11} /> View Content
+                </a>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="apptl-modal-actions" style={{ marginTop: 8 }}>
+        <button className="apptl-btn-submit" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  </div>
+);
 
 // ─── Deliverables Dialog ──────────────────────────────────────────────────────
 
@@ -247,7 +285,6 @@ const DeliverablesDialog: React.FC<{
   return (
     <div className="apptl-modal-overlay" onClick={onClose}>
       <div className="apptl-modal apptl-modal-wide" onClick={e => e.stopPropagation()}>
-
         <div className="apptl-modal-header">
           <div className="apptl-modal-title-row">
             <Upload size={18} style={{ color: '#6366f1' }} />
@@ -267,7 +304,6 @@ const DeliverablesDialog: React.FC<{
             <div key={i} className="apptl-deliverable-form-row">
               <div className="apptl-form-row-number">{i + 1}</div>
               <div className="apptl-form-fields">
-
                 <div className="apptl-form-field">
                   <label>Type</label>
                   <select value={row.type} onChange={e => update(i, 'type', e.target.value)}>
@@ -283,13 +319,11 @@ const DeliverablesDialog: React.FC<{
                     <option>Other</option>
                   </select>
                 </div>
-
                 <div className="apptl-form-field apptl-form-field-grow">
                   <label><Link2 size={10} /> Content URL</label>
                   <input type="url" placeholder="https://..." value={row.url}
                     onChange={e => update(i, 'url', e.target.value)} />
                 </div>
-
                 <div className="apptl-form-field apptl-form-field-grow">
                   <label>
                     <ImageIcon size={10} /> Preview Image
@@ -298,7 +332,6 @@ const DeliverablesDialog: React.FC<{
                   <input type="url" placeholder="https://..." value={row.imageUrl}
                     onChange={e => update(i, 'imageUrl', e.target.value)} />
                 </div>
-
               </div>
               {rows.length > 1 && (
                 <button className="apptl-remove-row" onClick={() => removeRow(i)}>
@@ -320,9 +353,7 @@ const DeliverablesDialog: React.FC<{
         </button>
 
         <div className="apptl-modal-actions">
-          <button className="apptl-btn-cancel" onClick={onClose} disabled={submitting}>
-            Cancel
-          </button>
+          <button className="apptl-btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
           <button className="apptl-btn-submit" onClick={handleSubmit} disabled={submitting}>
             {submitting
               ? <><Loader2 size={14} className="spin" /> Submitting…</>
@@ -378,7 +409,6 @@ const ReportDialog: React.FC<{
               <LifeBuoy size={18} style={{ color: '#6366f1' }} />
               <h3>Report a Problem</h3>
             </div>
-
             <div className="apptl-form-field" style={{ marginBottom: 12 }}>
               <label>Category</label>
               <select value={category} onChange={e => setCategory(e.target.value)}>
@@ -389,7 +419,6 @@ const ReportDialog: React.FC<{
                 <option value="other">Other issue</option>
               </select>
             </div>
-
             <div className="apptl-form-field" style={{ marginBottom: 16 }}>
               <label>Describe the issue</label>
               <textarea
@@ -400,7 +429,6 @@ const ReportDialog: React.FC<{
                 className="apptl-report-textarea"
               />
             </div>
-
             <div className="apptl-modal-actions">
               <button className="apptl-btn-cancel" onClick={onClose}>Cancel</button>
               <button className="apptl-btn-submit" onClick={handleSubmit}
@@ -420,9 +448,11 @@ const ReportDialog: React.FC<{
 // ─── Review Modal ─────────────────────────────────────────────────────────────
 
 const ReviewModal: React.FC<{
+  title: string;
+  placeholder: string;
   onClose: () => void;
   onSubmit: (rating: number, comment: string) => Promise<void>;
-}> = ({ onClose, onSubmit }) => {
+}> = ({ title, placeholder, onClose, onSubmit }) => {
   const [rating,     setRating]     = useState(5);
   const [comment,    setComment]    = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -432,9 +462,8 @@ const ReviewModal: React.FC<{
       <div className="apptl-modal" onClick={e => e.stopPropagation()}>
         <div className="apptl-modal-title-row" style={{ marginBottom: 16 }}>
           <Star size={18} style={{ color: '#f59e0b' }} />
-          <h3>Submit Review</h3>
+          <h3>{title}</h3>
         </div>
-
         <div className="apptl-stars-selector">
           {[1, 2, 3, 4, 5].map(s => (
             <Star key={s} size={28} className="star-clickable"
@@ -443,11 +472,9 @@ const ReviewModal: React.FC<{
               onClick={() => setRating(s)} />
           ))}
         </div>
-
         <textarea value={comment} onChange={e => setComment(e.target.value)}
-          placeholder="Share your feedback about the deliverables…"
+          placeholder={placeholder}
           rows={4} className="apptl-report-textarea" />
-
         <div className="apptl-modal-actions" style={{ marginTop: 16 }}>
           <button className="apptl-btn-cancel" onClick={onClose}>Cancel</button>
           <button className="apptl-btn-submit"
@@ -473,7 +500,7 @@ const StepActions: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="apptl-step-actions">{children}</div>
 );
 
-type BtnVariant = 'accept' | 'reject' | 'info' | 'warn' | 'neutral';
+type BtnVariant = 'accept' | 'reject' | 'info' | 'warn' | 'neutral' | 'star';
 
 const ActionBtn: React.FC<{
   variant: BtnVariant;
@@ -509,10 +536,14 @@ const ApplicationTimeline: React.FC<Props> = ({
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
 
-  const [showDeliverables, setShowDeliverables] = useState(false);
-  const [showReport,       setShowReport]       = useState(false);
-  const [showReview,       setShowReview]       = useState(false);
-  const [payLoading,       setPayLoading]       = useState(false);
+  const [showDeliverables,     setShowDeliverables]     = useState(false);
+  const [showViewDeliverables, setShowViewDeliverables] = useState(false);
+  const [showReport,           setShowReport]           = useState(false);
+  // Change 2: separate review modals for brand vs influencer
+  const [showReviewBrand,      setShowReviewBrand]      = useState(false);
+  const [showReviewPost,       setShowReviewPost]       = useState(false);
+  const [showReviewInfluencer, setShowReviewInfluencer] = useState(false);
+  const [payLoading,           setPayLoading]           = useState(false);
 
   const isCampaignFlow = !!application;
   const isCollabFlow   = !!collaboration;
@@ -557,7 +588,7 @@ const ApplicationTimeline: React.FC<Props> = ({
   const currentMeta = getMeta(lastStatus);
 
   // ── Identifiers ───────────────────────────────────────────────────────────
-  const collab        = collaboration as any;
+  const collab           = collaboration as any;
   const campaignTitle    = campaign?.title    ?? collab?.postName    ?? collab?.title    ?? '';
   const campaignDeadline = campaign?.deadline ?? collab?.postDeadline ?? collab?.deadline ?? '';
   const campaignId       = campaign?.id       ?? collab?.postId      ?? '';
@@ -576,27 +607,23 @@ const ApplicationTimeline: React.FC<Props> = ({
   const handleReject   = async () => { await doPost(`${API_BASE_URL}/application/${appId}/reject`);   onRefresh(); };
   const handleWithdraw = async () => { await doPost(`${API_BASE_URL}/application/${appId}/withdraw`); onRefresh(); };
 
-  // Sends plain JSON array — matches List<DeliverablesDTO> on the backend
   const handleSubmitDeliverables = async (rows: DeliverableRow[]) => {
     await doPost(`${API_BASE_URL}/application/${appId}/upload-deliverables`, rows);
     setShowDeliverables(false);
     onRefresh();
   };
 
-  // Brand: reject deliverables → DELIVERABLES_REJECTED
   const handleRejectDeliverables = async () => {
     await doPost(`${API_BASE_URL}/application/${appId}/reject-deliverables`);
     onRefresh();
   };
 
-  // Brand: accept deliverables → create Razorpay order → open checkout
   const handleAcceptDeliverables = async () => {
     setPayLoading(true);
     try {
       const res  = await doPost(`${API_BASE_URL}/payment/order/${appId}`);
       const data = await res.json();
-
-      const ok = await loadRazorpay();
+      const ok   = await loadRazorpay();
       if (!ok) { alert('Failed to load payment gateway. Please try again.'); return; }
 
       const rzp = new window.Razorpay({
@@ -634,10 +661,25 @@ const ApplicationTimeline: React.FC<Props> = ({
     }
   };
 
-  // Brand: submit written review
-  const handleSubmitReview = async (rating: number, comment: string) => {
+  // ── Review submit handlers ─────────────────────────────────────────────────
+  // Influencer: rate the brand they worked with
+  const handleSubmitReviewBrand = async (rating: number, comment: string) => {
+    await doPost(`${API_BASE_URL}/application/${appId}/review/brand`, { rating, comment });
+    setShowReviewBrand(false);
+    onRefresh();
+  };
+
+  // Influencer: rate the post / campaign experience
+  const handleSubmitReviewPost = async (rating: number, comment: string) => {
+    await doPost(`${API_BASE_URL}/application/${appId}/review/post`, { rating, comment });
+    setShowReviewPost(false);
+    onRefresh();
+  };
+
+  // Brand: rate the influencer
+  const handleSubmitReviewInfluencer = async (rating: number, comment: string) => {
     await doPost(`${API_BASE_URL}/application/${appId}/review`, { rating, comment });
-    setShowReview(false);
+    setShowReviewInfluencer(false);
     onRefresh();
   };
 
@@ -645,7 +687,7 @@ const ApplicationTimeline: React.FC<Props> = ({
   const renderLastStepActions = () => {
     const s = lastStatus;
 
-    // ── INFLUENCER side ───────────────────────────────────────────────────────
+    // ── INFLUENCER side ─────────────────────────────────────────────────────
     if (isCollabFlow) {
 
       if (s === 'pending') return (
@@ -655,7 +697,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // All states where influencer should / can submit deliverables
       if (s === 'accepted' || s === 'in_progress' || s === 'pending_deliverables') return (
         <StepActions>
           <ActionBtn variant="info" icon={<Upload size={12} />}
@@ -663,7 +704,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Resubmit after brand rejection + option to report
       if (s === 'deliverables_rejected') return (
         <StepActions>
           <ActionBtn variant="warn" icon={<RefreshCw size={12} />}
@@ -673,7 +713,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Waiting on brand to pay — no action for influencer
       if (s === 'deliverables_accepted' || s === 'payment_pending') return (
         <div className="apptl-payment-pending-badge">
           <Loader2 size={13} className="spin" />
@@ -681,7 +720,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </div>
       );
 
-      // Payment in transit to influencer wallet
       if (s === 'payment_receiving') return (
         <div className="apptl-payment-pending-badge">
           <Loader2 size={13} className="spin" />
@@ -689,7 +727,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </div>
       );
 
-      // Brand's payment failed — influencer can only report, brand must retry
       if (s === 'payment_failed') return (
         <StepActions>
           <ActionBtn variant="neutral" icon={<LifeBuoy size={12} />}
@@ -697,16 +734,35 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Fully complete
+      // ── Change 2: settled — influencer sees Rate Brand + Rate Post ────────
       if (s === 'settled' || s === 'payment_success') return (
-        <div className="apptl-settled-badge">
-          <CheckCircle size={13} />
-          Payment received — collaboration complete!
-        </div>
+        <>
+          <div className="apptl-settled-badge">
+            <CheckCircle size={13} />
+            Payment received — collaboration complete!
+          </div>
+          <div className="apptl-rating-section">
+            <span className="apptl-rating-label">How was your experience?</span>
+            <StepActions>
+              <ActionBtn
+                variant="star"
+                icon={<Star size={12} />}
+                label="Rate Brand"
+                onClick={() => setShowReviewBrand(true)}
+              />
+              <ActionBtn
+                variant="star"
+                icon={<Star size={12} />}
+                label="Rate Post / Campaign"
+                onClick={() => setShowReviewPost(true)}
+              />
+            </StepActions>
+          </div>
+        </>
       );
     }
 
-    // ── BRAND side ────────────────────────────────────────────────────────────
+    // ── BRAND side ──────────────────────────────────────────────────────────
     if (isCampaignFlow) {
 
       if (s === 'pending') return (
@@ -718,9 +774,11 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Deliverables are in for review
+      // ── Change 1: show View Deliverables button alongside Accept & Pay ────
       if (s === 'deliverables_submitted' || s === 'reviewing') return (
         <StepActions>
+          <ActionBtn variant="neutral" icon={<Eye size={12} />}
+            label="View Deliverables" onClick={() => setShowViewDeliverables(true)} />
           <ActionBtn variant="accept"
             icon={payLoading ? <Loader2 size={12} className="spin" /> : <CheckCircle size={12} />}
             label="Accept & Pay" onClick={handleAcceptDeliverables} disabled={payLoading} />
@@ -729,7 +787,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Razorpay order created but checkout window not completed yet
       if (s === 'payment_pending') return (
         <StepActions>
           <ActionBtn variant="info"
@@ -738,7 +795,6 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Brand side payment failed — retry
       if (s === 'payment_failed') return (
         <StepActions>
           <ActionBtn variant="warn"
@@ -747,12 +803,25 @@ const ApplicationTimeline: React.FC<Props> = ({
         </StepActions>
       );
 
-      // Brand side done
+      // ── Change 2: settled — brand sees Rate Influencer ────────────────────
       if (s === 'payment_success' || s === 'settled') return (
-        <div className="apptl-settled-badge">
-          <CheckCircle size={13} />
-          Payment sent successfully
-        </div>
+        <>
+          <div className="apptl-settled-badge">
+            <CheckCircle size={13} />
+            Payment sent successfully
+          </div>
+          <div className="apptl-rating-section">
+            <span className="apptl-rating-label">Rate this collaboration</span>
+            <StepActions>
+              <ActionBtn
+                variant="star"
+                icon={<Star size={12} />}
+                label="Rate Influencer"
+                onClick={() => setShowReviewInfluencer(true)}
+              />
+            </StepActions>
+          </div>
+        </>
       );
     }
 
@@ -775,12 +844,13 @@ const ApplicationTimeline: React.FC<Props> = ({
   const deliverables: Deliverable[] =
     application?.deliverables ?? (collaboration as any)?.deliverables ?? [];
 
+  const anyModalOpen =
+    showDeliverables || showViewDeliverables || showReport ||
+    showReviewBrand || showReviewPost || showReviewInfluencer;
+
   return (
     <>
-      {/* Full-page blur behind any open dialog */}
-      {(showDeliverables || showReport || showReview) && (
-        <div className="apptl-page-blur" />
-      )}
+      {anyModalOpen && <div className="apptl-page-blur" />}
 
       <div className="apptl-container">
 
@@ -865,6 +935,18 @@ const ApplicationTimeline: React.FC<Props> = ({
                       {meta.label}
                     </span>
                     {isLast && <span className="apptl-now-chip">Current</span>}
+
+                    {/* ── Change 1: View Deliverables chip on the deliverables_submitted step ── */}
+                    {isCampaignFlow &&
+                      ev.status === 'deliverables_submitted' &&
+                      deliverables.length > 0 && (
+                      <button
+                        className="apptl-view-del-chip"
+                        onClick={() => setShowViewDeliverables(true)}
+                      >
+                        <Eye size={10} /> View Deliverables
+                      </button>
+                    )}
                   </div>
                   <div className="apptl-step-time">
                     {date}<span className="apptl-dot">·</span>{time}
@@ -886,9 +968,7 @@ const ApplicationTimeline: React.FC<Props> = ({
                 {d.imageUrl && (
                   <img src={d.imageUrl} alt="preview" className="apptl-deliverable-thumb" />
                 )}
-                <a href={d.url} target="_blank" rel="noopener noreferrer">
-                  View Content
-                </a>
+                <a href={d.url} target="_blank" rel="noopener noreferrer">View Content</a>
                 {d.uploadedAt && (
                   <span className="apptl-deliverable-date">
                     {new Date(d.uploadedAt).toLocaleDateString()}
@@ -919,7 +999,15 @@ const ApplicationTimeline: React.FC<Props> = ({
 
       </div>
 
-      {/* ── Dialogs rendered outside container so blur covers the whole page ── */}
+      {/* ── Dialogs ────────────────────────────────────────────────────────── */}
+
+      {showViewDeliverables && (
+        <ViewDeliverablesModal
+          deliverables={deliverables}
+          onClose={() => setShowViewDeliverables(false)}
+        />
+      )}
+
       {showDeliverables && (
         <DeliverablesDialog
           isResubmit={lastStatus === 'deliverables_rejected'}
@@ -927,13 +1015,37 @@ const ApplicationTimeline: React.FC<Props> = ({
           onSubmit={handleSubmitDeliverables}
         />
       )}
+
       {showReport && (
         <ReportDialog appId={appId} onClose={() => setShowReport(false)} />
       )}
-      {showReview && (
+
+      {/* Change 2: Influencer review modals */}
+      {showReviewBrand && (
         <ReviewModal
-          onClose={() => setShowReview(false)}
-          onSubmit={handleSubmitReview}
+          title="Rate the Brand"
+          placeholder="How was working with this brand? Were they clear, fair, and professional?"
+          onClose={() => setShowReviewBrand(false)}
+          onSubmit={handleSubmitReviewBrand}
+        />
+      )}
+
+      {showReviewPost && (
+        <ReviewModal
+          title="Rate the Post / Campaign"
+          placeholder="How was the campaign brief? Was it well-structured and worth your effort?"
+          onClose={() => setShowReviewPost(false)}
+          onSubmit={handleSubmitReviewPost}
+        />
+      )}
+
+      {/* Change 2: Brand review modal */}
+      {showReviewInfluencer && (
+        <ReviewModal
+          title="Rate the Influencer"
+          placeholder="How were the deliverables? Was the creator professional and on time?"
+          onClose={() => setShowReviewInfluencer(false)}
+          onSubmit={handleSubmitReviewInfluencer}
         />
       )}
     </>

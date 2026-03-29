@@ -20,7 +20,7 @@
 .apptl-container::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 3px; }
 .apptl-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ─── Page blur overlay (behind dialog, over the rest of the page) ── */
+/* ─── Page blur overlay ──────────────────────────────── */
 .apptl-page-blur {
   position: fixed;
   inset: 0;
@@ -249,6 +249,30 @@
   letter-spacing: 0.5px;
 }
 
+/* ── Change 1: View Deliverables chip in step header ─── */
+.apptl-view-del-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #c4b5fd;
+  background: #ede9fe;
+  color: #7c3aed;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  /* Sits inline next to the label — no margin-top, let flex-wrap handle it */
+}
+
+.apptl-view-del-chip:hover {
+  background: #7c3aed;
+  color: white;
+  border-color: #7c3aed;
+}
+
 .apptl-step-time {
   font-size: 11px;
   color: #94a3b8;
@@ -299,6 +323,10 @@
 .apptl-inline-btn-neutral { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
 .apptl-inline-btn-neutral:hover:not(:disabled) { background: #64748b; color: white; border-color: #64748b; }
 
+/* ── Change 2: Star / rating action button ───────────── */
+.apptl-inline-btn-star { background: #fef9c3; color: #d97706; border-color: #fde68a; }
+.apptl-inline-btn-star:hover:not(:disabled) { background: #f59e0b; color: white; border-color: #f59e0b; }
+
 /* Status badges in last step */
 .apptl-settled-badge,
 .apptl-payment-pending-badge {
@@ -314,6 +342,23 @@
 
 .apptl-settled-badge         { background: #d1fae5; color: #059669; }
 .apptl-payment-pending-badge { background: #cffafe; color: #0891b2; }
+
+/* ── Change 2: Rating section below settled badge ─────── */
+.apptl-rating-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.apptl-rating-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
 
 /* ─── Deliverables display ───────────────────────────── */
 .apptl-deliverables { margin-bottom: 20px; }
@@ -370,7 +415,7 @@
 .apptl-review-card p    { color: #78350f; font-size: 13px; line-height: 1.6; margin: 0 0 6px; }
 .apptl-review-card span { font-size: 11px; color: #92400e; }
 
-/* ─── Modal overlay (z-index above page blur) ────────── */
+/* ─── Modal overlay ──────────────────────────────────── */
 .apptl-modal-overlay {
   position: fixed;
   inset: 0;
@@ -423,6 +468,97 @@
   border-radius: 8px;
   margin: 10px 0 4px;
 }
+
+/* ── Change 1: View Deliverables modal list ──────────── */
+.apptl-view-deliverables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+  padding-right: 2px;
+}
+
+.apptl-view-deliverables-list::-webkit-scrollbar { width: 4px; }
+.apptl-view-deliverables-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+.apptl-view-deliverables-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 24px 0;
+}
+
+.apptl-view-deliverable-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  transition: border-color 0.15s;
+}
+
+.apptl-view-deliverable-card:hover { border-color: #c4b5fd; }
+
+.apptl-view-deliverable-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.apptl-view-deliverable-thumb-placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.apptl-view-deliverable-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.apptl-view-deliverable-type {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.apptl-view-deliverable-date {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.apptl-view-deliverable-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+  width: fit-content;
+  transition: color 0.15s;
+}
+
+.apptl-view-deliverable-link:hover { color: #4f46e5; text-decoration: underline; }
 
 /* ─── Deliverables form (in modal) ──────────────────── */
 .apptl-deliverables-form {

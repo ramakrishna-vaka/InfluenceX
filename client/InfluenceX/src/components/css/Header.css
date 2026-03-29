@@ -959,7 +959,7 @@
 
 /* Add this rule */
 .content-shell.navbar-open .header-container {
-  max-width: calc(100vw - 220px);
+  max-width: calc(100vw - 230px);
 }
 
 .verified-badge {

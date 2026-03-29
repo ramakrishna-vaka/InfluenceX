@@ -59,9 +59,9 @@ const MyPosts: React.FC = () => {
   const getTotalStats = () => {
     return {
       totalCampaigns: campaigns.length,
-      totalApplications: campaigns.reduce((sum, c) => sum + c.applicants, 0),
-      activeCampaigns: campaigns.filter(c => c.status === 'open' || c.status === 'in-progress').length,
-      completedCampaigns: campaigns.filter(c => c.status === 'completed').length,
+      totalApplications: campaigns.reduce((sum, c) => sum + c.applications.length, 0),
+      activeCampaigns: campaigns.filter(c => c.status.toLowerCase() === 'open' || c.status.toLowerCase() === 'in-progress').length,
+      completedCampaigns: campaigns.filter(c => c.status.toLowerCase() === 'completed').length,
     };
   };
 

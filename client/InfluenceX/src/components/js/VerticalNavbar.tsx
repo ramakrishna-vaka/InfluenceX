@@ -1,6 +1,6 @@
 import React, { use } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, MessageCircle, Info, HelpCircle, Settings, User } from 'lucide-react';
+import { Home, FileText, MessageCircle, Info, HelpCircle, Settings, User ,Megaphone, Users } from 'lucide-react';
 import '../css/VerticalNavbar.css';
 import { useAuth } from '../../AuthProvider';
 
@@ -16,8 +16,8 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ isVisible, onHide,selec
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
-    {path:'/my-collaborations', icon: FileText, label: 'My Collaborations'},
-    { path: '/my-promotions', icon: FileText, label: 'My Promotions' },
+    {path:'/my-collaborations', icon: Users, label: 'My Collaborations'},
+    { path: '/my-promotions', icon: Megaphone, label: 'My Promotions' },
     { path: '/messages', icon: MessageCircle, label: 'Messages' },
     { path: '/about', icon: Info, label: 'About' },
     { path: '/help', icon: HelpCircle, label: 'Help' },

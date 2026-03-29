@@ -242,7 +242,7 @@ body {
 /* Post Card with Image */
 .post-card.has-image .post-image {
   position: relative;
-  height: 220px;
+  height: 230px;
   overflow: hidden;
 }
 

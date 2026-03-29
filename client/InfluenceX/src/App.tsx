@@ -10,6 +10,7 @@ import Help from './pages/js/Help.tsx';
 import { AuthProvider } from './AuthProvider.tsx';
 import Header from './components/js/Header.tsx';
 import VerticalNavbar from './components/js/VerticalNavbar.tsx';
+import Footer from './components/js/Footer.tsx';
 import './App.css';
 import { CampaignFilterProvider } from './CampaignFilterContext.tsx';
 import ApplyToCampaign from './pages/js/ApplyToCampaign.tsx';
@@ -64,7 +65,8 @@ function App() {
                    <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/:userId" element={<Profile />} />
             </Routes>
-          </main>
+              </main>
+               <Footer />
         </div>
       </div>
         </CampaignFilterProvider>

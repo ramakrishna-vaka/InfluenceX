@@ -110,3 +110,15 @@ body {
   margin-left: 230px;
   width: calc(100% - 230px);
 }
+
+/* Wrapper that holds <main> + <Footer> inside content-shell */
+.content-with-footer {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px); /* subtract your header height */
+}
+
+/* main grows to push footer down */
+.content-with-footer .main-app-content {
+  flex: 1;
+}

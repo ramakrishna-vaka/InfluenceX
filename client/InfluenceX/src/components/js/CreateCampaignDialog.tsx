@@ -252,7 +252,7 @@ const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({
     data.append("location",                formData.location);
     data.append("type",                    formData.type);
     data.append("followers",               formData.followers);
-    data.append("postStatus",              formData.postStatus.toUpperCase());
+    data.append("postStatus",              formData.postStatus ? formData.postStatus : "OPEN");
     if (mode === "edit") data.append("postId", post?.id ?? "");
     formData.platforms.forEach((p, i) => data.append(`platforms[${i}]`, p));
     if (image) data.append("image", image);

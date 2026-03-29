@@ -5,6 +5,7 @@ import com.project.InfluenceX.model.Notifications;
 import com.project.InfluenceX.model.Posts;
 import com.project.InfluenceX.model.User;
 import com.project.InfluenceX.repository.UserRepository;
+import com.project.InfluenceX.service.AuthService;
 import com.project.InfluenceX.service.JwtService;
 import com.project.InfluenceX.service.NotificationsService;
 import jakarta.servlet.http.Cookie;
@@ -23,43 +24,21 @@ import java.util.List;
 public class NotificationsController {
 
     private final NotificationsService notificationsService;
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final AuthService authService;
 
-    public NotificationsController(NotificationsService notificationsService,JwtService jwtService,UserRepository userRepository){
+    public NotificationsController(NotificationsService notificationsService,AuthService authService){
         this.notificationsService=notificationsService;
-        this.jwtService=jwtService;
-        this.userRepository=userRepository;
+        this.authService=authService;
     }
 
     public record NotificationDTO(Long id, String notification, boolean readBy) {}
 
     @GetMapping("/get/notifications")
     public ResponseEntity<?> getAllNotifications(HttpServletRequest request){
-        // 1️⃣ Get cookies from request
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No cookies found");
-        }
 
-        // 2️⃣ Find authToken cookie
-        String token = null;
-        for (Cookie cookie : cookies) {
-            if ("authToken".equals(cookie.getName())) {
-                token = cookie.getValue();
-                break;
-            }
-        }
+        User user = authService.getUser(request);
 
-        String email = jwtService.extractEmail(token);
-        User user=userRepository.findByEmail(email);
-
-        if (token == null || !jwtService.validateToken(token,user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
-        }
-
-
-        // 4️⃣ Fetch user’s posts
+        //  Fetch user’s posts
         List<Notifications> notifications = notificationsService.getAllNotifications(user);
         List<NotificationDTO> response = notifications.stream()
                 .map(n -> new NotificationDTO(n.getId(), n.getNotification(), n.getReadBy()))

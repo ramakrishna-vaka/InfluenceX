@@ -140,6 +140,11 @@ public class ChatService {
         return chatRepository.save(chat);
     }
 
+    public Long getChatId(User brand, User influencer){
+        Chat chat = chatRepository.findByInfluencerAndBrand(influencer,brand);
+        return chat.getId();
+    }
+
     public ChatResponseDTO convertToChatResponseDTO(Chat chat) {
         ChatResponseDTO dto = new ChatResponseDTO();
         dto.setId(chat.getId());

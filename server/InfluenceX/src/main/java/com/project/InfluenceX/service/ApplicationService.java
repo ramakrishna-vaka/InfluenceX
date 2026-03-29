@@ -88,6 +88,7 @@ public class ApplicationService {
             application.setStatus(ApplicationStatusEnum.ACCEPTED);
             application.setStatus(ApplicationStatusEnum.IN_PROGRESS);
             notificationsService.createNotification(application.getInfluencer(),application.getPost().getCreatedBy().getName() +" accepted your application to Post "+application.getPost().getTitle());
+            chatService.approveChat(chatService.getChatId(application.getPost().getCreatedBy(),application.getInfluencer()));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Application accepted");
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Application is not in pending state");

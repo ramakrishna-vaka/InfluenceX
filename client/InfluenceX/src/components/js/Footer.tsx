@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Zap, Github, Twitter, Instagram } from 'lucide-react';
+import { Zap, Github, Instagram, Youtube } from 'lucide-react';
 import '../css/Footer.css';
 
 const NAV = [
@@ -41,11 +41,40 @@ const Footer: React.FC = () => {
             The structured marketplace connecting genuine brands with verified creators.
             From application to payment — all in one place.
           </p>
-          <div className="ftr-socials">
-            <a href="#" aria-label="Twitter"  className="ftr-social"><Twitter  size={15} /></a>
-            <a href="#" aria-label="Instagram" className="ftr-social"><Instagram size={15} /></a>
-            <a href="#" aria-label="GitHub"   className="ftr-social"><Github   size={15} /></a>
-          </div>
+         <div className="ftr-socials">
+            <a
+                href="https://www.youtube.com/@vaka-ramakrishna"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                          className="ftr-social"
+                          title="Visit my YouTube channel"
+            >
+                <Youtube size={15} /> {/* replace with YouTube icon if you want */}
+            </a>
+
+            <a
+                href="https://instagram.com/vaka_ramakrishna_ramakrishna?igsh=aHJ3b3ZrOWtqbnl6"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                          className="ftr-social"
+                          title="Visit my Instagram profile"
+            >
+                <Instagram size={15} />
+            </a>
+
+            <a
+                href="https://github.com/ramakrishna-vaka"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                          className="ftr-social"
+                          title ="Visit my GitHub profile"
+            >
+                <Github size={15} />
+            </a>
+            </div>
         </div>
 
         {/* ── Navigation column ─────────────────────────── */}
@@ -68,8 +97,8 @@ const Footer: React.FC = () => {
           <ul className="ftr-links">
             <li>
               <a
-                href="/InfluenceX_UserGuide.docx"
-                download="InfluenceX_UserGuide.docx"
+                href="/InfluenceX_UserGuide_V1.pdf"
+                download="InfluenceX_UserGuide_V1.pdf"
                 className="ftr-link"
               >
                 User Guide (PDF)

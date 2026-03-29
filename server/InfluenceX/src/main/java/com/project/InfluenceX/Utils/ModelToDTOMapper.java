@@ -1,6 +1,7 @@
 package com.project.InfluenceX.Utils;
 
 import com.project.InfluenceX.model.*;
+import com.project.InfluenceX.model.ResponseDTO.DeliverableResponseDTO;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
@@ -29,12 +30,27 @@ public class ModelToDTOMapper {
         applicationDTO.setPitchMessage(application.getPitchMessage());
         applicationDTO.setInfluencerName(application.getInfluencer().getName());
         applicationDTO.setAppliedAt(application.getAppliedAt());
+        applicationDTO.setDeliverables(
+                application.getDeliverables() == null ? List.of() :
+                        application.getDeliverables()
+                                .stream()
+                                .map(ModelToDTOMapper::deliverableToDTO)
+                                .toList()
+        );
         if(application.getInfluencer().getImageData()!=null){
             applicationDTO.setInfluencerImage(Base64.getEncoder().encodeToString(application.getInfluencer().getImageData()));
         }
         applicationDTO.setCurrentStatus(application.getCurrentStatus().toString());
         applicationDTO.setApplicationId(application.getId().toString());
         return applicationDTO;
+    }
+
+    private static DeliverableResponseDTO deliverableToDTO(Deliverable deliverable) {
+        DeliverableResponseDTO dto = new DeliverableResponseDTO();
+        dto.setType(deliverable.getType());
+        dto.setUrl(deliverable.getUrl());
+        dto.setImageUrl(deliverable.getImageUrl());
+        return dto;
     }
 
     public static Posts updatePostWithPostDTO(Posts post, PostRequestDTO postRequestDTO){

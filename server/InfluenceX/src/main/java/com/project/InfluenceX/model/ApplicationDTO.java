@@ -1,5 +1,7 @@
 package com.project.InfluenceX.model;
 
+import com.project.InfluenceX.model.ResponseDTO.DeliverableResponseDTO;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +15,7 @@ public class ApplicationDTO {
     String influencerName;
     String currentStatus;
     String applicationId;
+    List<DeliverableResponseDTO> deliverables;
 
     public Long getPostId(){
         return postId;
@@ -78,6 +81,14 @@ public class ApplicationDTO {
 
     public void setApplicationId(String applicationId){
         this.applicationId=applicationId;
+    }
+
+    public void setDeliverables(List<DeliverableResponseDTO> deliverables){
+        this.deliverables = deliverables;
+    }
+
+    public List<DeliverableResponseDTO> getDeliverables(){
+        return deliverables;
     }
 
 }

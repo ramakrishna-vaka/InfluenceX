@@ -961,3 +961,7 @@
 .content-shell.navbar-open .header-container {
   max-width: calc(100vw - 220px);
 }
+
+.verified-badge {
+  color: #1DA1F2; /* Twitter-style blue */
+}

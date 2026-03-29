@@ -21,6 +21,7 @@ import { useCampaignFilter } from '../../CampaignFilterContext';
 import type { FilterState } from '../../CampaignFilterContext';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import WalletDialog from './WalletDialog';
+import { CheckCircle } from 'lucide-react';
 
 interface HeaderProps {
   onToggleNavbar: (pathname:string) => void;
@@ -39,7 +40,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const showFilterControls = ['/', '/my-promotions', '/my-collaborations'].includes(location.pathname);
+  //const showFilterControls = ['/', '/my-promotions', '/my-collaborations'].includes(location.pathname);
+  const showFilterControls = true; 
   
   const [isOpen, setIsOpen] = useState(false);
 
@@ -533,7 +535,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleNavbar }) => {
                     )}
                   </div>
                   <div className="user-details">
-                    <p className="user-name">{user.name}</p>
+                    <p className="user-name">
+                      {user.name}
+                      <CheckCircle size={14} className="verified-badge" />
+                    </p>
                     <p className="user-email">{user.email}</p>
                     {/* <span className="user-role-badge">{user.role}</span> */}
                   </div>

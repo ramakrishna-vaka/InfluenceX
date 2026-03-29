@@ -77,6 +77,9 @@ public class PaymentService {
 
             paymentRepository.save(payment);
             app.setStatus(ApplicationStatusEnum.PAYMENT_PENDING);
+            app.setStatus(ApplicationStatusEnum.PAYMENT_SUCCESS);
+            app.setStatus(ApplicationStatusEnum.PAYMENT_RECEIVING);
+            app.setStatus(ApplicationStatusEnum.SETTLED);
             applicationRepository.save(app);
 
             return Map.of(

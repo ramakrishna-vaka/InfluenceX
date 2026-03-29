@@ -4,6 +4,7 @@ import com.project.InfluenceX.model.RequestDTO.PhoneNumberVerificationRequestDTO
 import com.project.InfluenceX.model.RequestDTO.ProfileRequestDTO;
 import com.project.InfluenceX.model.ResponseDTO.ProfileResponseDTO;
 import com.project.InfluenceX.model.User;
+import com.project.InfluenceX.service.AuthService;
 import com.project.InfluenceX.service.JwtService;
 import com.project.InfluenceX.service.ProfileService;
 import com.project.InfluenceX.service.UserService;
@@ -27,13 +28,11 @@ import java.util.Map;
 public class ProfileController {
 
     private final ProfileService profileService;
-    private final UserService userService;
-    private final JwtService jwtService;
+    private final AuthService authService;
 
-    public ProfileController(ProfileService profileService,UserService userService, JwtService jwtService){
+    public ProfileController(ProfileService profileService,AuthService authService){
         this.profileService=profileService;
-        this.userService = userService;
-        this.jwtService = jwtService;
+        this.authService=authService;
     }
 
     /**
@@ -46,7 +45,7 @@ public class ProfileController {
         try {
             // If no userId provided, get current authenticated user's ID
             if (userId == null) {
-                userId = getCurrentUserId(request);
+                userId = authService.getUser(request).getId();
             }
 
             ProfileResponseDTO profile = profileService.getProfile(userId);
@@ -68,7 +67,8 @@ public class ProfileController {
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfile(@Valid @ModelAttribute ProfileRequestDTO profileData, HttpServletRequest request) {
         try {
-            Long currentUserId = getCurrentUserId(request);
+            User user = authService.getUser(request);
+            Long currentUserId = user.getId();
             ProfileResponseDTO updatedProfile = profileService.updateProfile(currentUserId, profileData);
             return ResponseEntity.ok(updatedProfile);
 
@@ -88,7 +88,7 @@ public class ProfileController {
     @DeleteMapping("/social/{platform}")
     public ResponseEntity<?> disconnectSocialProfile(@PathVariable String platform,HttpServletRequest request) {
         try {
-            Long currentUserId = getCurrentUserId(request);
+            Long currentUserId = authService.getUser(request).getId();
             profileService.disconnectSocialProfile(currentUserId, platform);
 
             Map<String, Object> response = new HashMap<>();
@@ -104,49 +104,6 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("Error disconnecting social profile", e.getMessage()));
         }
-    }
-
-    /**
-     * Helper method to get current authenticated user's ID
-     * In production, extract from JWT token or Spring Security context
-     */
-    private Long getCurrentUserId(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-
-        // Step 2: Look for the authToken cookie
-        String token = null;
-        for (Cookie cookie : cookies) {
-            if ("authToken".equals(cookie.getName())) {
-                token = cookie.getValue();
-                break;
-            }
-        }
-
-        // ❗ If token missing → return 401 immediately (avoid exceptions)
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-
-        //TODO
-//        if (!jwtService.validateToken(token)) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-//        }
-
-        // Step 3: Extract user email from the JWT and fetch user info
-        String email = jwtService.extractEmail(token);
-        User user = userService.getUserByEmail(email);
-
-        if (user == null) {
-            return null;
-        }
-
-        if (token == null || !jwtService.validateToken(token,user)) {
-            return null;
-        }
-        return  user.getId();
     }
 
     /**
@@ -166,7 +123,7 @@ public class ProfileController {
      */
     @PutMapping("/verify-phone")
     public ResponseEntity<?> generateOtp(@RequestBody PhoneNumberVerificationRequestDTO dto, HttpServletRequest request){
-        Long userId=getCurrentUserId(request);
+        Long userId=authService.getUser(request).getId();
         String phoneNumber=dto.getPhoneNumber();
 
         profileService.sendPhoneVerificationOtp(userId, phoneNumber);
@@ -180,7 +137,7 @@ public class ProfileController {
     @PutMapping("/confirm-phone")
     public ResponseEntity<?> confirmOTP(@RequestBody PhoneNumberVerificationRequestDTO dto,HttpServletRequest request) {
 
-        Long userId = getCurrentUserId(request);
+        Long userId = authService.getUser(request).getId();
 
         String phone = dto.getPhoneNumber();
         String otp = dto.getOtp();
@@ -196,7 +153,7 @@ public class ProfileController {
     @GetMapping("/delete-phone")
     public ResponseEntity<?> deletePhone(HttpServletRequest request) {
 
-        Long userId = getCurrentUserId(request);
+        Long userId = authService.getUser(request).getId();
 
         profileService.deletePhoneNumber(userId);
 

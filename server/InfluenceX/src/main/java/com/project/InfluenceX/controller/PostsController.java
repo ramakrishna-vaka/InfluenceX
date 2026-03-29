@@ -3,6 +3,7 @@ package com.project.InfluenceX.controller;
 import com.project.InfluenceX.model.*;
 
 import com.project.InfluenceX.repository.UserRepository;
+import com.project.InfluenceX.service.AuthService;
 import com.project.InfluenceX.service.JwtService;
 import com.project.InfluenceX.service.PostsService;
 import jakarta.servlet.http.Cookie;
@@ -22,11 +23,13 @@ public class PostsController {
     private final PostsService postsService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final AuthService authService;
 
-    public PostsController(PostsService postsService, JwtService jwtService, UserRepository userRepository){
+    public PostsController(PostsService postsService, JwtService jwtService, UserRepository userRepository,AuthService authService){
         this.postsService=postsService;
         this.jwtService=jwtService;
         this.userRepository= userRepository;
+        this.authService= authService;
     }
 
     @GetMapping("/posts")
@@ -100,7 +103,11 @@ public class PostsController {
 
 
     @PostMapping(value = "/create/post" , consumes = "multipart/form-data")
-    public ResponseEntity createPost(@ModelAttribute PostRequestDTO postsDTO) {
+    public ResponseEntity createPost(@ModelAttribute PostRequestDTO postsDTO,HttpServletRequest request) {
+        User user = authService.getUser(request);
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
         if (postsDTO == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post must not be null");
         }
@@ -109,30 +116,8 @@ public class PostsController {
 
     @GetMapping("/my-posts")
     public ResponseEntity<?> getMyPosts(HttpServletRequest request) {
-        // 1️⃣ Get cookies from request
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No cookies found");
-        }
+        User user = authService.getUser(request);
 
-        // 2️⃣ Find authToken cookie
-        String token = null;
-        for (Cookie cookie : cookies) {
-            if ("authToken".equals(cookie.getName())) {
-                token = cookie.getValue();
-                break;
-            }
-        }
-
-        String email = jwtService.extractEmail(token);
-        User user=userRepository.findByEmail(email);
-
-        if (token == null || !jwtService.validateToken(token,user)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
-        }
-
-
-        // 4️⃣ Fetch user’s posts
         List<PostResponseDTO> posts = postsService.getMyPosts(user);
         return ResponseEntity.ok(posts);
     }

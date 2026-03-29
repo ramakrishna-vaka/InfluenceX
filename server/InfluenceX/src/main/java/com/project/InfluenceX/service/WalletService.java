@@ -50,6 +50,7 @@ public class WalletService {
     @Transactional
     public void credit(User user, double amount, String description, String reference) {
         user.setWalletMoney(user.getWalletMoney() + amount);
+        user.setTotalEarnings(user.getTotalEarnings() + amount );
         userRepository.save(user);
         txnRepository.save(WalletTransaction.credit(user, amount, description, reference));
     }

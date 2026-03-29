@@ -17,11 +17,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final NotificationsService notificationsService;
+    private final WalletService walletService;
 
-    public UserService(UserRepository userRepository,NotificationsService notificationsService)
+    public UserService(UserRepository userRepository,NotificationsService notificationsService,WalletService walletService)
     {
         this.notificationsService=notificationsService;
         this.userRepository = userRepository;
+        this.walletService=walletService;
     }
 
     public PasswordEncoder passwordEncoder() {
@@ -57,11 +59,10 @@ public class UserService {
     }
 
     public void addRegisterBonus(User user){
-        user.setWalletMoney(50);
-        user.setTotalEarnings(50);
+        walletService.credit(user,50,"50 has been credited to your account as a registration bonus","InfluenceX");
         notificationsService.createNotification(
                 user,
-                "₹50 has been credited to your account as a registration bonus."
+                "₹50 has been credited to your account as a registration bonus, you can check your wallet."
         );
     }
 

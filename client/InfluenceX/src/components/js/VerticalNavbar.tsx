@@ -23,6 +23,7 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ isVisible, onHide,selec
     { path: '/help', icon: HelpCircle, label: 'Help' },
   ];
 
+   if (!authUser) return null;
   return (
     <nav className={`vertical-navbar ${isVisible ? "show" : "hide"}`}>
       <div className="navbar-content">

@@ -12,6 +12,7 @@ interface Campaign {
   price: number;
   deadline: string;
   status: 'open' | 'in-progress' | 'completed';
+  postStatus: string;
   applicants: number;
   pendingCount: number;
   acceptedCount: number;
@@ -60,8 +61,8 @@ const MyPosts: React.FC = () => {
     return {
       totalCampaigns: campaigns.length,
       totalApplications: campaigns.reduce((sum, c) => sum + c.applications.length, 0),
-      activeCampaigns: campaigns.filter(c => c.status.toLowerCase() === 'open' || c.status.toLowerCase() === 'in-progress').length,
-      completedCampaigns: campaigns.filter(c => c.status.toLowerCase() === 'completed').length,
+      activeCampaigns: campaigns.filter(c => c.postStatus?.toLowerCase() === 'open' || c.postStatus?.toLowerCase() === 'in-progress').length,
+      completedCampaigns: campaigns.filter(c => c.postStatus?.toLowerCase() === 'completed').length,
     };
   };
 

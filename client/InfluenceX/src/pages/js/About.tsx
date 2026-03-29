@@ -4,7 +4,7 @@ import {
   Upload, CreditCard, Star, Download, ArrowRight,
   ShieldCheck, TrendingUp, Users,
 } from 'lucide-react';
-import './About.css';
+import '../css/About.css';
 
 const STEPS = [
   {

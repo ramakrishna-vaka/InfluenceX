@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import './Help.css';
+import '../css/Help.css';
 
 const FAQS = [
   {

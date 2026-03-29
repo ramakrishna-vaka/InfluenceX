@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Zap, Github, Twitter, Instagram } from 'lucide-react';
-import './Footer.css';
+import '../css/Footer.css';
 
 const NAV = [
   { label: 'Home',              path: '/' },

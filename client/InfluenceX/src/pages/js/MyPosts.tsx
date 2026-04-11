@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Eye, TrendingUp, Calendar, DollarSign, Clock, Activity, Gift } from 'lucide-react';
+import { Users, Eye, TrendingUp, Calendar, DollarSign, Clock, Activity, Gift, Trash2 } from 'lucide-react';
 import '../css/MyPosts.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,9 +29,16 @@ const MyPosts: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCampaigns();
+  }, []);
+
+  useEffect(() => {
+    const close = () => setOpenMenuId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
   }, []);
 
   const fetchCampaigns = async () => {
@@ -50,6 +57,26 @@ const MyPosts: React.FC = () => {
       console.error('Error fetching campaigns:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deletePost = async (e: React.MouseEvent, campaignId: string) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`${API_BASE_URL}/delete/post/${campaignId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+      } else {
+        const msg = await response.text();
+        console.error('Delete failed:', msg);
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    } finally {
+      setOpenMenuId(null);
     }
   };
 
@@ -157,9 +184,26 @@ const MyPosts: React.FC = () => {
                 className="campaign-grid-card"
                 onClick={() => handleCampaignClick(campaign.id)}
               >
+                <div className="card-menu-wrapper" onClick={e => e.stopPropagation()}>
+                  <button
+                    className="card-menu-btn"
+                    onClick={() => setOpenMenuId(openMenuId === campaign.id ? null : campaign.id)}
+                  >
+                    ···
+                  </button>
+                  {openMenuId === campaign.id && (
+                    <div className="card-menu-dropdown">
+                      <button className="card-menu-delete" onClick={e => deletePost(e, campaign.id)}>
+                        <Trash2 size={14} />
+                        Delete post
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {campaign.imageBase64 && (
                   <div className="campaign-image-container">
-                    <img src={`data:image/*;base64,${campaign.imageBase64}`}  alt={campaign.title} />
+                    <img src={`data:image/*;base64,${campaign.imageBase64}`} alt={campaign.title} />
                     <div className={`status-overlay status-${campaign.status}`}>
                       {campaign.status}
                     </div>
@@ -174,8 +218,10 @@ const MyPosts: React.FC = () => {
 
                   <div className="campaign-meta-info">
                     <div className="meta-info-item">
-                      {campaign.compensationType === 'money'? ( <><DollarSign size={16} /><span>${campaign.compensationDescription}</span></>
-                      ): (<><Gift size={16} /><span>{campaign.compensationDescription || 'Other'}</span></>
+                      {campaign.compensationType === 'money' ? (
+                        <><DollarSign size={16} /><span>${campaign.compensationDescription}</span></>
+                      ) : (
+                        <><Gift size={16} /><span>{campaign.compensationDescription || 'Other'}</span></>
                       )}
                     </div>
                     <div className="meta-info-item">

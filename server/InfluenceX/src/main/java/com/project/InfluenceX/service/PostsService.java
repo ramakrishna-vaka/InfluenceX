@@ -85,5 +85,21 @@ public class PostsService {
         return ResponseEntity.ok(savedPost);
     }
 
+    public ResponseEntity<?> deletePost(Posts post) {
+        boolean hasActiveApplication = post.getApplications().stream()
+                .anyMatch(application ->
+                        application.getCurrentStatus() != ApplicationStatusEnum.PENDING &&
+                                application.getCurrentStatus() != ApplicationStatusEnum.REJECTED &&
+                                application.getCurrentStatus() != ApplicationStatusEnum.WITHDRAW
+                );
+
+        if (hasActiveApplication) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Some Influencer is actively working on this post, so you cannot delete this");
+        }
+
+        postsRepository.delete(post);
+        return ResponseEntity.ok("Post deleted successfully");
+    }
 
 }

@@ -122,6 +122,25 @@ public class PostsController {
         return ResponseEntity.ok(posts);
     }
 
+    @DeleteMapping(value = "/delete/post/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable Long postId,HttpServletRequest request) {
+        try {
+            User user = authService.getUser(request);
+            if(user==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login");
+            }
+            Posts post = postsService.getPostById(postId);
+            if(post==null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post not exists");
+            }
+            if (post.getCreatedBy() != user) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not the owner of the post!");
+            }
+            return postsService.deletePost(post);
 
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 
 }
